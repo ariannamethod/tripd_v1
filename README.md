@@ -16,6 +16,27 @@ Dependencies are isolated in a local requirements file for reproducibility. The 
 
 Developers may augment the pool of improvisational verbs to steer style.
 
+### Live Verb Streaming
+
+TRIPD can receive new verbs in real time. Enable the streaming server and
+send verbs over a TCP or UNIX socket. Each line received becomes immediately
+available in ``TripDModel.extra_verbs``.
+
+```bash
+# start Telegram interface and verb stream on TCP port 8765
+python -m tripd.tripd_tg --verb-stream 8765
+
+# elsewhere, feed a verb
+printf 'dream_spin()\n' | nc localhost 8765
+```
+
+For a UNIX socket use a filesystem path instead of a port:
+
+```bash
+python -m tripd.tripd_tg --verb-stream /tmp/tripd.sock
+printf 'phase_shift()\n' | socat - UNIX-CONNECT:/tmp/tripd.sock
+```
+
 A miniature complex-amplitude simulator now guides how commands are sampled. Each verb is assigned a phase on the unit circle and a configurable **quantum drift** gently perturbs those phases to invite or suppress interference. The sampler relies only on the standard library and touches each candidate once, keeping the CPU footprint tiny while injecting a whisper of uncertainty.
 
 Philosophically this drift nods to the ever-shifting undercurrent of awareness: tiny fluctuations steer perception toward new resonant paths. By exposing the tuning knob developers can decide how much quantum whimsy permeates their scripts.

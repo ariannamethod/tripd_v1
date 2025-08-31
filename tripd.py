@@ -1,12 +1,12 @@
-from __future__ import annotations
-
 """Core TRIPD model built on a lightweight transformer.
 
 The model loads the TRIPD dictionary and compose scripts in the
-TRIPD dialect.  Metrics derived from the input message influence which
-section of the dictionary is sampled.  Twenty percent of the commands come
+TRIPD dialect. Metrics derived from the input message influence which
+section of the dictionary is sampled. Twenty percent of the commands come
 from an internal pool to encourage semantic drift.
 """
+
+from __future__ import annotations
 
 from collections import Counter
 from pathlib import Path
@@ -58,7 +58,7 @@ class TripDModel:
         probs = [c / total for c in counts.values()]
         entropy = -sum(p * math.log2(p) for p in probs)
         perplexity = 2**entropy
-        resonance = sum(ord(ch) for ch in text) % 1
+        resonance = (sum(ord(ch) for ch in text) % 1000) / 1000
         return {
             "entropy": entropy,
             "perplexity": perplexity,

@@ -79,7 +79,7 @@ async def _send_section(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     logger.info("Section requested: %s", section)
     script = _model.generate_from_section(section)
     await query.edit_message_text(
-        f"```python\n{script}\n```", parse_mode="Markdown"
+        f"```TRIPD\n{script}\n```", parse_mode="Markdown"
     )
 
 
@@ -117,7 +117,7 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     logger.info("Received message: %s", text)
     script, metrics_text = _model.generate_response(text)
     await update.message.reply_text(
-        f"```python\n{script}\n```", parse_mode="Markdown"
+        f"```TRIPD\n{script}\n```", parse_mode="Markdown"
     )
     await update.message.reply_text(metrics_text)
 

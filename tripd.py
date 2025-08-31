@@ -15,8 +15,12 @@ import math
 import random
 from typing import Dict, List
 
-from .tripd_memory import log_script, get_log_count
-from .tripd_expansion import train_async
+try:  # pragma: no cover - support running as a script
+    from .tripd_memory import log_script, get_log_count
+    from .tripd_expansion import train_async
+except ImportError:  # pragma: no cover - fallback to absolute imports
+    from tripd_memory import log_script, get_log_count
+    from tripd_expansion import train_async
 
 
 class ComplexAmplitudeSimulator:

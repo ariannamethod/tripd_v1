@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 import argparse
 import os
+import logging
 from typing import List
 
 from telegram import (
@@ -28,6 +29,9 @@ try:  # pragma: no cover - support package and script execution
 except ImportError:  # pragma: no cover - fallback for running as scripts
     from tripd import TripDModel
     from verb_stream import start_verb_stream
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Model and dictionary setup
@@ -63,6 +67,7 @@ async def _show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         await update.message.reply_text(
             "Select a topic:", reply_markup=_menu_keyboard()
         )
+    logger.info("Menu displayed")
 
 
 # ---------------------------------------------------------------------------
@@ -71,6 +76,7 @@ async def _send_section(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     query = update.callback_query
     await query.answer()
     section = query.data.split(":", 1)[1]
+    logger.info("Section requested: %s", section)
     script = _model.generate_from_section(section)
     await query.edit_message_text(
         f"```python\n{script}\n```", parse_mode="Markdown"
@@ -83,6 +89,7 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     query = update.callback_query
     await query.answer()
     index = int(query.data.split(":", 1)[1])
+    logger.info("Theory section %d requested", index)
     text = _readme_parts[index]
     buttons = []
     if index > 0:
@@ -107,6 +114,7 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     assert update.message
     text = update.message.text or ""
+    logger.info("Received message: %s", text)
     metrics = _model.metrics(text)
     if metrics["entropy"] > 4.5:
         formatted = f"<b>{text}</b>"
@@ -157,6 +165,7 @@ def main() -> None:
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_message)
     )
+    logger.info("Starting Telegram polling")
     application.run_polling()
 
 

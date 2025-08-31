@@ -52,6 +52,7 @@ class TripDModel:
         self,
         dictionary_path: Path | None = None,
         quantum_drift: float = 0.0,
+        fractal_metrics: bool = False,
     ) -> None:
         base = Path(__file__).resolve().parent
         path = dictionary_path or base / "tripdictionary.md"
@@ -67,6 +68,7 @@ class TripDModel:
             "ripple_idea()",
         ]
         self.simulator = ComplexAmplitudeSimulator(quantum_drift)
+        self.fractal_metrics = fractal_metrics
 
     # ------------------------------------------------------------------
     def _load_dictionary(self, path: Path) -> Dict[str, List[str]]:
@@ -89,13 +91,35 @@ class TripDModel:
         total = sum(counts.values())
         probs = [c / total for c in counts.values()]
         entropy = -sum(p * math.log2(p) for p in probs)
-        perplexity = 2**entropy
+        perplexity = 2 ** entropy
         resonance = (sum(ord(ch) for ch in text) % 1000) / 1000
-        return {
+        metrics = {
             "entropy": entropy,
             "perplexity": perplexity,
             "resonance": resonance,
         }
+        if self.fractal_metrics:
+            vals = [ord(ch) for ch in text]
+            n = len(vals)
+            if n == 0:
+                spectral = 0.0
+            else:
+                spectrum = []
+                limit = min(8, n)
+                for k in range(1, limit + 1):
+                    angle = 2 * math.pi * k / n
+                    real = sum(v * math.cos(angle * i) for i, v in enumerate(vals))
+                    imag = sum(v * math.sin(angle * i) for i, v in enumerate(vals))
+                    spectrum.append(math.hypot(real, imag))
+                total_power = sum(spectrum) or 1.0
+                norm = [p / total_power for p in spectrum]
+                spectral = -sum(p * math.log(p) for p in norm)
+            metrics["spectral"] = spectral
+            selector = spectral * 1000
+        else:
+            selector = entropy + perplexity + resonance
+        metrics["selector"] = selector
+        return metrics
 
     # ------------------------------------------------------------------
     def metrics(self, text: str) -> Dict[str, float]:
@@ -105,12 +129,7 @@ class TripDModel:
     # ------------------------------------------------------------------
     def _choose_section(self, metrics: Dict[str, float]) -> str:
         names = sorted(self.sections)
-        index_value = (
-            metrics["entropy"],
-            metrics["perplexity"],
-            metrics["resonance"],
-        )
-        index = int(sum(index_value))
+        index = int(metrics["selector"])
         return names[index % len(names)]
 
     # ------------------------------------------------------------------

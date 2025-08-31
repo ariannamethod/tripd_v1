@@ -56,7 +56,7 @@ def test_generate_script_with_small_section(tmp_path, num_cmds):
     model = TripDModel(path)
     random.seed(0)
     model._choose_section = lambda metrics: "small"
-    script = model.generate_script("msg")
+    script = model.generate_script("msg", simple_mode=True)  # Use simple mode for backwards compatibility
     lines = [line.strip() for line in script.splitlines()[1:] if line.strip()]
     extra_set = set(model.extra_verbs)
     commands = [line for line in lines if line not in extra_set]

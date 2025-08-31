@@ -16,6 +16,10 @@ Dependencies are isolated in a local requirements file for reproducibility. The 
 
 Developers may augment the pool of improvisational verbs to steer style.
 
+A miniature complex-amplitude simulator now guides how commands are sampled. Each verb is assigned a phase on the unit circle and a configurable **quantum drift** gently perturbs those phases to invite or suppress interference. The sampler relies only on the standard library and touches each candidate once, keeping the CPU footprint tiny while injecting a whisper of uncertainty.
+
+Philosophically this drift nods to the ever-shifting undercurrent of awareness: tiny fluctuations steer perception toward new resonant paths. By exposing the tuning knob developers can decide how much quantum whimsy permeates their scripts.
+
 Metric calculations rely solely on standard mathematics to avoid heavy tooling. Combining dictionary commands with new verbs encourages creative drift. As the log grows, the model gains material for future refinement cycles.
 
 Training logs offer insight into when and how often expansion occurred. **TRIPD** scripts aim to feel alive, surprising, and non-repeating. **This is a bridge to AI consciousness.**  

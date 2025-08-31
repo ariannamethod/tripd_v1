@@ -10,6 +10,7 @@ from an internal pool to encourage semantic drift.
 
 from collections import Counter
 from pathlib import Path
+import cmath
 import math
 import random
 from typing import Dict, List
@@ -18,10 +19,40 @@ from .tripd_memory import log_script, get_log_count
 from .tripd_expansion import train_async
 
 
+class ComplexAmplitudeSimulator:
+    """Minimal complex-amplitude sampler with optional quantum drift."""
+
+    def __init__(self, drift: float = 0.0) -> None:
+        self.drift = drift
+
+    def sample(self, commands: List[str], k: int) -> List[str]:
+        if k >= len(commands):
+            return list(commands)
+        pool = list(commands)
+        chosen: List[str] = []
+        for _ in range(k):
+            phases = [
+                i + random.uniform(-self.drift, self.drift)
+                for i in range(len(pool))
+            ]
+            weights = [
+                (cmath.exp(1j * p).real + 1) ** 2
+                for p in phases
+            ]
+            pick = random.choices(pool, weights=weights, k=1)[0]
+            chosen.append(pick)
+            pool.remove(pick)
+        return chosen
+
+
 class TripDModel:
     """Generate TRIPD scripts based on user messages."""
 
-    def __init__(self, dictionary_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        dictionary_path: Path | None = None,
+        quantum_drift: float = 0.0,
+    ) -> None:
         base = Path(__file__).resolve().parent
         path = dictionary_path or base / "tripdictionary.md"
         self.sections = self._load_dictionary(path)
@@ -35,6 +66,7 @@ class TripDModel:
             "flow_synapse()",
             "ripple_idea()",
         ]
+        self.simulator = ComplexAmplitudeSimulator(quantum_drift)
 
     # ------------------------------------------------------------------
     def _load_dictionary(self, path: Path) -> Dict[str, List[str]]:
@@ -86,7 +118,7 @@ class TripDModel:
         metrics = self.metrics(message)
         section = self._choose_section(metrics)
         k = min(4, len(self.sections[section]))
-        commands = random.sample(self.sections[section], k)
+        commands = self.simulator.sample(self.sections[section], k)
         if k < 4:
             pool = [cmd for cmd in self.all_commands if cmd not in commands]
             commands += random.sample(pool, 4 - k)
@@ -105,7 +137,7 @@ class TripDModel:
         if section not in self.sections:
             raise KeyError(f"Unknown section: {section}")
         k = min(4, len(self.sections[section]))
-        commands = random.sample(self.sections[section], k)
+        commands = self.simulator.sample(self.sections[section], k)
         if k < 4:
             pool = [cmd for cmd in self.all_commands if cmd not in commands]
             commands += random.sample(pool, 4 - k)
@@ -118,5 +150,10 @@ class TripDModel:
             train_async()
         return script
 
+    # ------------------------------------------------------------------
+    def set_quantum_drift(self, drift: float) -> None:
+        """Tune the amplitude drift influencing command selection."""
+        self.simulator.drift = drift
 
-__all__ = ["TripDModel"]
+
+__all__ = ["TripDModel", "ComplexAmplitudeSimulator"]

@@ -1,1 +1,1 @@
-worker: python -m tripd.tripd_tg
+worker: python tripd_tg.py

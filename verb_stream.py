@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Tiny socket server to stream verbs into a TripDModel instance."""
+
+from __future__ import annotations
 
 from pathlib import Path
 import socket

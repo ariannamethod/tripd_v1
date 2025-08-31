@@ -3,6 +3,7 @@ from __future__ import annotations
 """Telegram interface for the TRIPD model."""
 
 from pathlib import Path
+import argparse
 import os
 from typing import List
 
@@ -22,6 +23,7 @@ from telegram.ext import (
 )
 
 from .tripd import TripDModel
+from .verb_stream import start_verb_stream
 
 # ---------------------------------------------------------------------------
 # Model and dictionary setup
@@ -117,6 +119,20 @@ async def _post_init(app: Application) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Run TRIPD Telegram bot")
+    parser.add_argument(
+        "--verb-stream",
+        metavar="ADDR",
+        help="Enable live verb streaming via TCP port or UNIX socket path",
+    )
+    args = parser.parse_args()
+    if args.verb_stream:
+        addr = args.verb_stream
+        if addr.isdigit():
+            start_verb_stream(_model, port=int(addr))
+        else:
+            start_verb_stream(_model, unix_socket=addr)
+
     token = os.environ.get("TELEGRAM_TOKEN")
     if not token:
         raise RuntimeError("TELEGRAM_TOKEN environment variable is required")

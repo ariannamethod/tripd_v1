@@ -178,5 +178,29 @@ class TripDModel:
         """Tune the amplitude drift influencing command selection."""
         self.simulator.drift = drift
 
+    # ------------------------------------------------------------------
+    def start_verb_stream(
+        self,
+        host: str = "127.0.0.1",
+        port: int = 8765,
+        unix_socket: str | None = None,
+    ):
+        """Begin a background verb stream feeding :attr:`extra_verbs`.
+
+        Import is performed lazily to avoid circular dependencies with
+        :mod:`verb_stream`. The stream runs entirely on the CPU.
+
+        Parameters
+        ----------
+        host, port:
+            Address for the TCP server when ``unix_socket`` is not provided.
+        unix_socket:
+            Optional UNIX domain socket path to bind instead of TCP.
+        """
+
+        from .verb_stream import start_verb_stream as _start  # local import
+
+        return _start(self, host=host, port=port, unix_socket=unix_socket)
+
 
 __all__ = ["TripDModel", "ComplexAmplitudeSimulator"]

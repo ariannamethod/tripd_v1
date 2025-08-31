@@ -25,10 +25,8 @@ from telegram.ext import (
 
 try:  # pragma: no cover - support package and script execution
     from .tripd import TripDModel
-    from .verb_stream import start_verb_stream
 except ImportError:  # pragma: no cover - fallback for running as scripts
     from tripd import TripDModel
-    from verb_stream import start_verb_stream
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -110,19 +108,12 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 # ---------------------------------------------------------------------------
-# Message echo with metric-based font selection
+# Simple message echo without metric logic
 async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     assert update.message
     text = update.message.text or ""
     logger.info("Received message: %s", text)
-    metrics = _model.metrics(text)
-    if metrics["entropy"] > 4.5:
-        formatted = f"<b>{text}</b>"
-    elif metrics["perplexity"] > 10:
-        formatted = f"<i>{text}</i>"
-    else:
-        formatted = f"<code>{text}</code>"
-    await update.message.reply_text(formatted, parse_mode="HTML")
+    await update.message.reply_text(f"<code>{text}</code>", parse_mode="HTML")
 
 
 # ---------------------------------------------------------------------------
@@ -149,9 +140,9 @@ def main() -> None:
     if args.verb_stream:
         addr = args.verb_stream
         if addr.isdigit():
-            start_verb_stream(_model, port=int(addr))
+            _model.start_verb_stream(port=int(addr))
         else:
-            start_verb_stream(_model, unix_socket=addr)
+            _model.start_verb_stream(unix_socket=addr)
 
     token = args.token or os.environ.get("TELEGRAM_TOKEN")
     if not token:

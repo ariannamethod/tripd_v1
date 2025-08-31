@@ -123,6 +123,8 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     else:
         formatted = f"<code>{text}</code>"
     await update.message.reply_text(formatted, parse_mode="HTML")
+    metrics_text = ", ".join(f"{k}: {v:.3f}" for k, v in metrics.items())
+    await update.message.reply_text(metrics_text)
 
 
 # ---------------------------------------------------------------------------

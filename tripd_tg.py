@@ -36,14 +36,41 @@ logger = logging.getLogger(__name__)
 _model = TripDModel()
 _sections: List[str] = sorted(_model.sections)
 
-# Preload README and split into three equal parts
+# Preload README and split into logical sections
 _README = Path(__file__).resolve().parent / "README.md"
 _text = _README.read_text(encoding="utf-8")
-_chunk = len(_text) // 3
-_readme_parts = [
-    _text[i * _chunk : (i + 1) * _chunk] for i in range(3)
-]
-_readme_parts[2] += _text[3 * _chunk :]
+
+# Split by major sections for better parsing
+sections = _text.split("## ")
+_readme_parts = []
+current_part = ""
+chars_per_part = 3500  # Telegram message limit consideration
+
+for i, section in enumerate(sections):
+    if i == 0:  # First part before any ##
+        current_part = section
+    else:
+        section_text = "## " + section
+        if len(current_part + section_text) > chars_per_part and current_part:
+            _readme_parts.append(current_part.strip())
+            current_part = section_text
+        else:
+            current_part += "\n\n" + section_text
+
+if current_part:
+    _readme_parts.append(current_part.strip())
+
+# Ensure we have at least 3 parts
+while len(_readme_parts) < 3:
+    if _readme_parts:
+        # Split the longest part
+        longest_idx = max(range(len(_readme_parts)), key=lambda i: len(_readme_parts[i]))
+        longest = _readme_parts[longest_idx]
+        mid = len(longest) // 2
+        _readme_parts[longest_idx] = longest[:mid]
+        _readme_parts.insert(longest_idx + 1, longest[mid:])
+    else:
+        _readme_parts = [_text[:len(_text)//3], _text[len(_text)//3:2*len(_text)//3], _text[2*len(_text)//3:]]
 
 # ---------------------------------------------------------------------------
 # Menu helpers
@@ -51,12 +78,12 @@ _readme_parts[2] += _text[3 * _chunk :]
 def _menu_keyboard() -> InlineKeyboardMarkup:
     buttons = [[InlineKeyboardButton(name, callback_data=f"section:{name}")]
                for name in _sections]
-    buttons.append([InlineKeyboardButton("THEORY", callback_data="theory:0")])
+    buttons.append([InlineKeyboardButton("TRIPD Documentation", callback_data="theory:0")])
     return InlineKeyboardMarkup(buttons)
 
 
 async def _show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message = "⚡"
+    message = "True Recursive Intelligent Python Dialect"
     if update.callback_query:
         await update.callback_query.answer()
         await update.callback_query.edit_message_text(
@@ -89,18 +116,24 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await query.answer()
     index = int(query.data.split(":", 1)[1])
     logger.info("Theory section %d requested", index)
+    
+    # Проверяем границы индекса
+    if index >= len(_readme_parts):
+        index = 0
+    
     text = _readme_parts[index]
+    max_index = len(_readme_parts) - 1
     
     # Создаем кнопки навигации как в книге
     nav_buttons = []
     if index > 0:
         nav_buttons.append(InlineKeyboardButton("◀️", callback_data=f"theory:{index - 1}"))
     else:
-        nav_buttons.append(InlineKeyboardButton("◀️", callback_data="theory:2"))  # Зацикливаем
+        nav_buttons.append(InlineKeyboardButton("◀️", callback_data=f"theory:{max_index}"))  # Зацикливаем
     
-    nav_buttons.append(InlineKeyboardButton("⚡", callback_data="menu"))
+    nav_buttons.append(InlineKeyboardButton("📚", callback_data="menu"))
     
-    if index < 2:
+    if index < max_index:
         nav_buttons.append(InlineKeyboardButton("▶️", callback_data=f"theory:{index + 1}"))
     else:
         nav_buttons.append(InlineKeyboardButton("▶️", callback_data="theory:0"))  # Зацикливаем
@@ -125,7 +158,7 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 # ---------------------------------------------------------------------------
 async def _post_init(app: Application) -> None:
-    await app.bot.set_my_commands([BotCommand("tripd", "Open TRIPD menu")])
+    await app.bot.set_my_commands([BotCommand("tripd", "Meet TRIPD 👉")])
 
 
 def main() -> None:

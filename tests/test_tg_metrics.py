@@ -39,10 +39,11 @@ class DummyContext:
     pass
 
 
-def test_metrics_echoed_back():
+def test_script_and_metrics_returned():
     update = DummyUpdate("abc")
     context = DummyContext()
     asyncio.run(_handle_message(update, context))
     assert len(update.message.replies) == 2
+    assert "def tripd_script" in update.message.replies[0]
     assert "entropy" in update.message.replies[1]
     assert "perplexity" in update.message.replies[1]

@@ -72,6 +72,14 @@ while len(_readme_parts) < 3:
     else:
         _readme_parts = [_text[:len(_text)//3], _text[len(_text)//3:2*len(_text)//3], _text[2*len(_text)//3:]]
 
+# Load policy files
+_ACCEPTABLE_USE = Path(__file__).resolve().parent / "ACCEPTABLE_USE.md"
+_TRADEMARK_POLICY = Path(__file__).resolve().parent / "TRADEMARK_POLICY.md"
+_policy_parts = [
+    _ACCEPTABLE_USE.read_text(encoding="utf-8"),
+    _TRADEMARK_POLICY.read_text(encoding="utf-8")
+]
+
 # ---------------------------------------------------------------------------
 # Menu helpers
 
@@ -79,6 +87,7 @@ def _menu_keyboard() -> InlineKeyboardMarkup:
     buttons = [[InlineKeyboardButton(name, callback_data=f"section:{name}")]
                for name in _sections]
     buttons.append([InlineKeyboardButton("TRIPD Documentation", callback_data="theory:0")])
+    buttons.append([InlineKeyboardButton("TRIPD Policy", callback_data="policy:0")])
     return InlineKeyboardMarkup(buttons)
 
 
@@ -144,6 +153,40 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 # ---------------------------------------------------------------------------
+# Policy navigation
+async def _send_policy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
+    index = int(query.data.split(":", 1)[1])
+    logger.info("Policy section %d requested", index)
+    
+    # Проверяем границы индекса
+    if index >= len(_policy_parts):
+        index = 0
+    
+    text = _policy_parts[index]
+    max_index = len(_policy_parts) - 1
+    
+    # Создаем кнопки навигации
+    nav_buttons = []
+    if index > 0:
+        nav_buttons.append(InlineKeyboardButton("◀️", callback_data=f"policy:{index - 1}"))
+    else:
+        nav_buttons.append(InlineKeyboardButton("◀️", callback_data=f"policy:{max_index}"))
+    
+    nav_buttons.append(InlineKeyboardButton("📚", callback_data="menu"))
+    
+    if index < max_index:
+        nav_buttons.append(InlineKeyboardButton("▶️", callback_data=f"policy:{index + 1}"))
+    else:
+        nav_buttons.append(InlineKeyboardButton("▶️", callback_data="policy:0"))
+    
+    await query.edit_message_text(
+        text, reply_markup=InlineKeyboardMarkup([nav_buttons])
+    )
+
+
+# ---------------------------------------------------------------------------
 # Message handling delegated to the TRIPD model
 async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     assert update.message
@@ -202,6 +245,9 @@ def main() -> None:
     )
     application.add_handler(
         CallbackQueryHandler(_send_theory, pattern="^theory:")
+    )
+    application.add_handler(
+        CallbackQueryHandler(_send_policy, pattern="^policy:")
     )
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_message)

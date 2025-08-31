@@ -79,21 +79,23 @@ def load_scripts() -> List[str]:
     return list(_SCRIPT_LIST)
 
 
-def log_script(script: str) -> None:
+def log_script(script: str) -> bool:
     """Persist *script* if it has not been seen before.
 
+    Returns ``True`` if the script was newly logged and ``False`` otherwise.
     Membership checks are serviced entirely from the in-memory index so the
     log file is not re-read on each call.
     """
     script_hash = _hash_script(script)
     if script_hash in _SCRIPTS_INDEX:
-        return
+        return False
     _ensure_log()
     _rotate_log()
     with _LOG_PATH.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps({"hash": script_hash, "script": script}) + "\n")
     _SCRIPTS_INDEX.add(script_hash)
     _SCRIPT_LIST.append(script)
+    return True
 
 
 def get_log_count() -> int:

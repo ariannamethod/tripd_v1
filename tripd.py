@@ -150,16 +150,20 @@ class TripDModel:
         """
         metrics = metrics or self.metrics(message)
         section = self._choose_section(metrics)
-        k = min(4, len(self.sections[section]))
-        commands = self.simulator.sample(self.sections[section], k)
-        if k < 4:
-            pool = [cmd for cmd in self.all_commands if cmd not in commands]
-            commands += random.sample(pool, 4 - k)
-        extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
-        lines = [f"    {cmd}" for cmd in commands + extra]
-        script = "def tripd_script():\n" + "\n".join(lines) + "\n"
-
-        log_script(script)
+        max_attempts = 5
+        attempt = 0
+        while True:
+            k = min(4, len(self.sections[section]))
+            commands = self.simulator.sample(self.sections[section], k)
+            if k < 4:
+                pool = [cmd for cmd in self.all_commands if cmd not in commands]
+                commands += random.sample(pool, 4 - k)
+            extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
+            lines = [f"    {cmd}" for cmd in commands + extra]
+            script = "def tripd_script():\n" + "\n".join(lines) + "\n"
+            if log_script(script) or attempt >= max_attempts - 1:
+                break
+            attempt += 1
         if get_log_count() % 5 == 0:
             train_async()
         return script
@@ -169,16 +173,20 @@ class TripDModel:
         """Create a TRIPD script using commands from a specific section."""
         if section not in self.sections:
             raise KeyError(f"Unknown section: {section}")
-        k = min(4, len(self.sections[section]))
-        commands = self.simulator.sample(self.sections[section], k)
-        if k < 4:
-            pool = [cmd for cmd in self.all_commands if cmd not in commands]
-            commands += random.sample(pool, 4 - k)
-        extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
-        lines = [f"    {cmd}" for cmd in commands + extra]
-        script = "def tripd_script():\n" + "\n".join(lines) + "\n"
-
-        log_script(script)
+        max_attempts = 5
+        attempt = 0
+        while True:
+            k = min(4, len(self.sections[section]))
+            commands = self.simulator.sample(self.sections[section], k)
+            if k < 4:
+                pool = [cmd for cmd in self.all_commands if cmd not in commands]
+                commands += random.sample(pool, 4 - k)
+            extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
+            lines = [f"    {cmd}" for cmd in commands + extra]
+            script = "def tripd_script():\n" + "\n".join(lines) + "\n"
+            if log_script(script) or attempt >= max_attempts - 1:
+                break
+            attempt += 1
         if get_log_count() % 5 == 0:
             train_async()
         return script

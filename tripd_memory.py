@@ -1,12 +1,12 @@
-from __future__ import annotations
-
 """Utility functions for tracking generated TRIPD scripts.
 
 This module stores each produced script in a JSON lines log file so that
-scripts are never repeated.  The log also provides a simple count used by
+scripts are never repeated. The log also provides a simple count used by
 training routines to trigger periodic fine‑tuning once enough examples have
 been collected.
 """
+
+from __future__ import annotations
 
 from pathlib import Path
 import hashlib

@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Telegram interface for the TRIPD model."""
+
+from __future__ import annotations
 
 from pathlib import Path
 import argparse

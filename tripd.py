@@ -87,5 +87,20 @@ class TripDModel:
             train_async()
         return script
 
+    # ------------------------------------------------------------------
+    def generate_from_section(self, section: str) -> str:
+        """Create a TRIPD script using commands from a specific section."""
+        if section not in self.sections:
+            raise KeyError(f"Unknown section: {section}")
+        commands = random.sample(self.sections[section], 4)
+        extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
+        lines = [f"    {cmd}" for cmd in commands + extra]
+        script = "def tripd_script():\n" + "\n".join(lines) + "\n"
+
+        log_script(script)
+        if get_log_count() % 5 == 0:
+            train_async()
+        return script
+
 
 __all__ = ["TripDModel"]

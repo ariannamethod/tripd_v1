@@ -1,1 +1,1 @@
-worker: python tripd_tg.py
+web: python tripd_tg.py

@@ -129,7 +129,7 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 # ---------------------------------------------------------------------------
 async def _post_init(app: Application) -> None:
-    await app.bot.set_my_commands([BotCommand("tripd", "Open TRIPD menu")])
+    await app.bot.set_my_commands([BotCommand("tripd", "GO!")])
 
 
 def main() -> None:

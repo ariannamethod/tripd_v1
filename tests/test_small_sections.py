@@ -41,3 +41,28 @@ def test_generate_from_small_section(tmp_path, num_cmds):
         assert f"cmd{i}()" in commands
     if num_cmds < 4:
         assert any(f"pool{i}()" in commands for i in range(4))
+
+
+@pytest.mark.parametrize("num_cmds", [1, 2, 3])
+def test_generate_script_with_small_section(tmp_path, num_cmds):
+    memory._LOG_PATH = tmp_path / "scripts.log"
+    expansion._TRAIN_LOG = tmp_path / "train.log"
+
+    dictionary = "## small\n" + "\n".join(f"cmd{i}()" for i in range(num_cmds))
+    dictionary += "\n\n## pool\n" + "\n".join(f"pool{i}()" for i in range(4)) + "\n"
+    path = tmp_path / "dict.md"
+    path.write_text(dictionary)
+
+    model = TripDModel(path)
+    random.seed(0)
+    model._choose_section = lambda metrics: "small"
+    script = model.generate_script("msg")
+    lines = [line.strip() for line in script.splitlines()[1:] if line.strip()]
+    extra_set = set(model.extra_verbs)
+    commands = [line for line in lines if line not in extra_set]
+
+    assert len(commands) == 4
+    for i in range(num_cmds):
+        assert f"cmd{i}()" in commands
+    if num_cmds < 4:
+        assert any(f"pool{i}()" in commands for i in range(4))

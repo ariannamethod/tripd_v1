@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Tiny socket server to stream verbs into a TripDModel instance."""
+
+from __future__ import annotations
 
 from pathlib import Path
 import socket
@@ -8,7 +8,7 @@ import threading
 from typing import Optional
 
 try:  # pragma: no cover - prefer package import
-    from .tripd import TripDModel  # type: ignore
+    from . import TripDModel  # type: ignore
 except ImportError:  # pragma: no cover - fallback when run directly
     from tripd import TripDModel  # type: ignore
 

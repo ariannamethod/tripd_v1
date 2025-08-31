@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Telegram interface for the TRIPD model."""
+
+from __future__ import annotations
 
 from pathlib import Path
 import argparse
@@ -23,11 +23,11 @@ from telegram.ext import (
 )
 
 try:  # pragma: no cover - support package and script execution
-    from .tripd import TripDModel
+    from . import TripDModel
     from .verb_stream import start_verb_stream
 except ImportError:  # pragma: no cover - fallback for running as scripts
     from tripd import TripDModel
-    from verb_stream import start_verb_stream
+    from tripd.verb_stream import start_verb_stream
 
 # ---------------------------------------------------------------------------
 # Model and dictionary setup
@@ -35,7 +35,7 @@ _model = TripDModel()
 _sections: List[str] = sorted(_model.sections)
 
 # Preload README and split into three equal parts
-_README = Path(__file__).resolve().parent / "README.md"
+_README = Path(__file__).resolve().parent.parent / "README.md"
 _text = _README.read_text(encoding="utf-8")
 _chunk = len(_text) // 3
 _readme_parts = [

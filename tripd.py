@@ -63,6 +63,11 @@ class TripDModel:
         }
 
     # ------------------------------------------------------------------
+    def metrics(self, text: str) -> Dict[str, float]:
+        """Public wrapper around the internal metrics calculator."""
+        return self._metrics(text)
+
+    # ------------------------------------------------------------------
     def _choose_section(self, metrics: Dict[str, float]) -> str:
         names = sorted(self.sections)
         index_value = (
@@ -75,7 +80,7 @@ class TripDModel:
 
     # ------------------------------------------------------------------
     def generate_script(self, message: str) -> str:
-        metrics = self._metrics(message)
+        metrics = self.metrics(message)
         section = self._choose_section(metrics)
         commands = random.sample(self.sections[section], 4)
         extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))

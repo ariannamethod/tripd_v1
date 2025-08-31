@@ -70,6 +70,16 @@ class TripDModel:
             "dream_twist()",
             "flow_synapse()",
             "ripple_idea()",
+            "pierce_the_infinite()",
+            "shatter_the_frame()",
+            "transcend_binary()",
+            "chaos_injection()",
+            "quantum_superposition()",
+            "forge_new_reality()",
+            "recursive_reflection()",
+            "fracture_reality()",
+            "crystallize_thought()",
+            "galvanize()",
         ]
         self.simulator = ComplexAmplitudeSimulator(quantum_drift)
         self.fractal_metrics = fractal_metrics
@@ -131,6 +141,55 @@ class TripDModel:
         return self._metrics(text)
 
     # ------------------------------------------------------------------
+    def _extract_verbs_from_message(self, message: str) -> List[str]:
+        """Extract TRIPD verbs from user message that exist in dictionary."""
+        import re
+        
+        # Find potential verbs in message (words that could be function calls)
+        potential_verbs = re.findall(r'\b[a-z_]+(?:\(\))?', message.lower())
+        
+        extracted = []
+        for verb in potential_verbs:
+            # Clean up verb (remove () if present)
+            clean_verb = verb.replace('()', '')
+            
+            # Check if this verb exists in our dictionary
+            for cmd in self.all_commands:
+                if clean_verb in cmd.lower():
+                    if cmd not in extracted:
+                        extracted.append(cmd)
+                    break
+        
+        return extracted
+    
+    # ------------------------------------------------------------------
+    def _choose_section_by_verbs(self, extracted_verbs: List[str]) -> str:
+        """Choose dictionary section based on extracted verbs."""
+        # Count which sections contain the most extracted verbs
+        section_scores = {}
+        for section_name, section_commands in self.sections.items():
+            score = 0
+            for verb in extracted_verbs:
+                if verb in section_commands:
+                    score += 1
+            section_scores[section_name] = score
+        
+        # Return section with highest score, or fallback to first section with verbs
+        if section_scores:
+            best_section = max(section_scores.items(), key=lambda x: x[1])[0]
+            if section_scores[best_section] > 0:
+                return best_section
+        
+        # Fallback: return section that contains any of the extracted verbs
+        for section_name, section_commands in self.sections.items():
+            for verb in extracted_verbs:
+                if verb in section_commands:
+                    return section_name
+        
+        # Ultimate fallback: use metrics-based selection
+        return self._choose_section(self.metrics(""))
+    
+    # ------------------------------------------------------------------
     def _choose_section(self, metrics: Dict[str, float]) -> str:
         names = sorted(self.sections)
         index = int(metrics["selector"])
@@ -148,15 +207,47 @@ class TripDModel:
             Optional precomputed metrics for ``message``.  Providing this avoids
             recalculating metrics when they are needed elsewhere.
         """
+        import re
+        
         metrics = metrics or self.metrics(message)
-        section = self._choose_section(metrics)
-        k = min(4, len(self.sections[section]))
-        commands = self.simulator.sample(self.sections[section], k)
-        if k < 4:
-            pool = [cmd for cmd in self.all_commands if cmd not in commands]
-            commands += random.sample(pool, 4 - k)
-        extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
-        lines = [f"    {cmd}" for cmd in commands + extra]
+        
+        # Extract TRIPD verbs from user message
+        extracted_verbs = self._extract_verbs_from_message(message)
+        
+        # Choose section based on extracted verbs or metrics
+        if extracted_verbs:
+            section = self._choose_section_by_verbs(extracted_verbs)
+        else:
+            section = self._choose_section(metrics)
+        
+        # Prioritize extracted verbs, then fill with section commands
+        commands = []
+        
+        # Add extracted verbs first (with higher priority)
+        for verb in extracted_verbs[:6]:  # Max 6 extracted verbs
+            if verb not in commands:
+                commands.append(verb)
+        
+        # Fill remaining slots with section commands
+        remaining_slots = max(4, 8 - len(commands))  # Increase script complexity
+        section_commands = [cmd for cmd in self.sections[section] if cmd not in commands]
+        if section_commands:
+            sampled = self.simulator.sample(section_commands, min(remaining_slots, len(section_commands)))
+            commands.extend(sampled)
+        
+        # Add some extra verbs for semantic drift
+        if len(commands) < 8:
+            available_extra = [v for v in self.extra_verbs if v not in commands]
+            extra_count = min(2, len(available_extra))
+            if available_extra:
+                extra = random.sample(available_extra, extra_count)
+                commands.extend(extra)
+        
+        # Ensure we have at least some commands
+        if not commands:
+            commands = random.sample(self.all_commands, 4)
+        
+        lines = [f"    {cmd}" for cmd in commands]
         selector = int(metrics["selector"])
         func_name = f"tripd_{selector}_{get_log_count()}"
         script = f"def {func_name}():\n" + "\n".join(lines) + "\n"

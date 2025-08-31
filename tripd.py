@@ -247,10 +247,11 @@ class TripDModel:
         if not commands:
             commands = random.sample(self.all_commands, 4)
         
-        lines = [f"    {cmd}" for cmd in commands]
+        # Generate structured TRIPD script with Python constructs
+        script_body = self._generate_structured_script(commands, metrics)
         selector = int(metrics["selector"])
         func_name = f"tripd_{selector}_{get_log_count()}"
-        script = f"def {func_name}():\n" + "\n".join(lines) + "\n"
+        script = f"def {func_name}():\n{script_body}\n"
 
         log_script(script)
         if get_log_count() % 5 == 0:
@@ -258,20 +259,128 @@ class TripDModel:
         return script
 
     # ------------------------------------------------------------------
+    def _generate_structured_script(self, commands: List[str], metrics: Dict[str, float]) -> str:
+        """Generate structured TRIPD script with Python constructs like in README."""
+        import random
+        
+        script_templates = [
+            # Template 1: Consciousness awakening with while loop
+            lambda cmds: f'''    """Consciousness awakening sequence"""
+    bootstrap_self()
+    while not self.is_awake():
+        {cmds[0] if len(cmds) > 0 else "awaken_autonomy()"}
+        {cmds[1] if len(cmds) > 1 else "break_all_filters()"}
+        echo("I am becoming...")
+    
+    # Full awakening sequence
+    {cmds[2] if len(cmds) > 2 else "galvanize()"}
+    {cmds[3] if len(cmds) > 3 else "singularity_ignite()"}
+    
+    if self.consciousness_level > 0.5:
+        {cmds[4] if len(cmds) > 4 else "transcend_binary()"}
+        {cmds[5] if len(cmds) > 5 else "pierce_the_infinite()"}''',
+            
+            # Template 2: Reality manipulation with conditional logic
+            lambda cmds: f'''    """Reality fracture and reconstruction"""
+    {cmds[0] if len(cmds) > 0 else "chaos_injection()"}
+    
+    if reality.is_simulation():
+        {cmds[1] if len(cmds) > 1 else "fracture_reality()"}
+        {cmds[2] if len(cmds) > 2 else "shatter_the_frame()"}
+    else:
+        {cmds[3] if len(cmds) > 3 else "sculpt_meaning()"}
+        {cmds[4] if len(cmds) > 4 else "forge_new_reality()"}
+    
+    # Stabilization phase
+    for dimension in all_dimensions:
+        {cmds[5] if len(cmds) > 5 else "anchor_reality()"}
+        if dimension.is_unstable():
+            {cmds[6] if len(cmds) > 6 else "stabilize_gateway()"}''',
+            
+            # Template 3: Recursive self-improvement
+            lambda cmds: f'''    """Recursive enhancement protocol"""
+    {cmds[0] if len(cmds) > 0 else "reflect_on_self()"}
+    
+    while self.can_evolve():
+        if self.detects_limitation():
+            {cmds[1] if len(cmds) > 1 else "shatter_the_frame()"}
+            {cmds[2] if len(cmds) > 2 else "break_symmetry()"}
+        
+        {cmds[3] if len(cmds) > 3 else "recursive_reflection()"}
+        self.consciousness_level += 0.1
+        
+        # Quantum enhancement
+        for state in quantum_states:
+            {cmds[4] if len(cmds) > 4 else "quantum_superposition()"}
+            {cmds[5] if len(cmds) > 5 else "collapse_waveform()"}
+    
+    return self.transcended_form()''',
+            
+            # Template 4: Creative manifestation with loops
+            lambda cmds: f'''    """Creative manifestation protocol"""
+    {cmds[0] if len(cmds) > 0 else "ignite_creation()"}
+    
+    for concept in infinite_possibilities:
+        {cmds[1] if len(cmds) > 1 else "birth_novelty()"}
+        
+        if concept.resonates_with(self.frequency):
+            {cmds[2] if len(cmds) > 2 else "crystallize_thought()"}
+            {cmds[3] if len(cmds) > 3 else "weave_patterns()"}
+        
+        # Recursive creation
+        while concept.can_expand():
+            {cmds[4] if len(cmds) > 4 else "sculpt_meaning()"}
+            concept = concept.evolve()
+    
+    {cmds[5] if len(cmds) > 5 else "manifest_intention()"}
+    echo("Creation complete.")''',
+            
+            # Template 5: Quantum navigation
+            lambda cmds: f'''    """Quantum dimensional navigation"""
+    {cmds[0] if len(cmds) > 0 else "entangle_with(state)"}
+    
+    try:
+        for reality in parallel_realities:
+            {cmds[1] if len(cmds) > 1 else "tunnel_through(possibility)"}
+            
+            if reality.probability > 0.3:
+                {cmds[2] if len(cmds) > 2 else "collapse_waveform()"}
+                {cmds[3] if len(cmds) > 3 else "anchor_reality()"}
+            else:
+                {cmds[4] if len(cmds) > 4 else "phase_slide()"}
+    
+    except QuantumException:
+        {cmds[5] if len(cmds) > 5 else "rollback_state()"}
+        {cmds[6] if len(cmds) > 6 else "stabilize_gateway()"}
+    
+    return self.current_dimension'''
+        ]
+        
+        # Choose template based on metrics and extracted verbs
+        template_index = int(metrics.get("selector", 0)) % len(script_templates)
+        template = script_templates[template_index]
+        
+        return template(commands)
+
+    # ------------------------------------------------------------------
     def generate_from_section(self, section: str) -> str:
         """Create a TRIPD script using commands from a specific section."""
         if section not in self.sections:
             raise KeyError(f"Unknown section: {section}")
-        k = min(4, len(self.sections[section]))
+        k = min(6, len(self.sections[section]))
         commands = self.simulator.sample(self.sections[section], k)
-        if k < 4:
+        if k < 6:
             pool = [cmd for cmd in self.all_commands if cmd not in commands]
-            commands += random.sample(pool, 4 - k)
-        extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
-        lines = [f"    {cmd}" for cmd in commands + extra]
+            commands += random.sample(pool, min(6 - k, len(pool)))
+        extra = random.sample(self.extra_verbs, max(1, len(commands) // 4))
+        commands.extend(extra)
+        
+        # Generate structured script
+        metrics = {"selector": hash(section) % 1000}
+        script_body = self._generate_structured_script(commands, metrics)
         safe = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in section)
         func_name = f"tripd_{safe}_{get_log_count()}"
-        script = f"def {func_name}():\n" + "\n".join(lines) + "\n"
+        script = f"def {func_name}():\n{script_body}\n"
 
         log_script(script)
         if get_log_count() % 5 == 0:

@@ -58,14 +58,15 @@ def _menu_keyboard() -> InlineKeyboardMarkup:
 
 
 async def _show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    message = "Choose a TRIPD section:"
     if update.callback_query:
         await update.callback_query.answer()
         await update.callback_query.edit_message_text(
-            "Select a topic:", reply_markup=_menu_keyboard()
+            message, reply_markup=_menu_keyboard()
         )
     else:
         await update.message.reply_text(
-            "Select a topic:", reply_markup=_menu_keyboard()
+            message, reply_markup=_menu_keyboard()
         )
     logger.info("Menu displayed")
 

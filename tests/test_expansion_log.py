@@ -1,5 +1,6 @@
 import importlib.util
 import sys
+from datetime import datetime
 from pathlib import Path
 
 BASE = Path(__file__).resolve().parent.parent
@@ -32,4 +33,6 @@ def test_training_log_accumulates(monkeypatch, tmp_path):
     t2, c2 = lines[1].split("\t")
     assert int(c1) == 1
     assert int(c2) == 2
-    assert int(t2) >= int(t1)
+    dt1 = datetime.fromisoformat(t1)
+    dt2 = datetime.fromisoformat(t2)
+    assert dt2 >= dt1

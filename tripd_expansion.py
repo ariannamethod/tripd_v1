@@ -20,7 +20,7 @@ _TRAIN_LOG = Path(__file__).resolve().parent / "training.log"
 
 def _train_on_scripts(scripts: Iterable[str]) -> None:
     """Pretend to fine‑tune a model on the provided scripts."""
-    # A realistic implementation would invoke torch/transformers here.
+    # A realistic implementation would invoke an external training library here.
     scripts = list(scripts)
     time.sleep(0.1)  # Simulate a bit of work.
     timestamp = datetime.now().isoformat()

@@ -10,9 +10,9 @@ On startup the model reads this dictionary to form its initial phrase repertoire
 
 Generated scripts conform to Python syntax while carrying tripd's surreal verbs. The memory module ensures that a script is never produced twice. Logged outputs accumulate as JSON lines for transparent review. After every five unique scripts the system triggers a background training pass.
 
-Training is asynchronous so user interaction remains responsive. The expansion module currently simulates fine-tuning and records its activity. A real deployment could swap this stub for a torch-based trainer.
+Training is asynchronous so user interaction remains responsive. The expansion module currently simulates fine-tuning and records its activity. A real deployment could integrate a lightweight trainer if deeper learning is desired.
 
-Dependencies are isolated in a local requirements file for reproducibility. The transformer core is intentionally lightweight and open to extension.
+Dependencies are isolated in a local requirements file for reproducibility, and the project runs entirely on CPU without requiring PyTorch or GPU drivers. The transformer core is intentionally lightweight and open to extension.
 
 Developers may augment the pool of improvisational verbs to steer style.
 

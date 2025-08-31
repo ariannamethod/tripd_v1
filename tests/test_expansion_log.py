@@ -15,8 +15,8 @@ def _load(name: str, file: str):
 
 
 # Load memory first to satisfy expansion's relative import
-_load("tripd_pkg.tripd_memory", "tripd_memory.py")
-expansion = _load("tripd_pkg.tripd_expansion", "tripd_expansion.py")
+_load("tripd_pkg.tripd_memory", "tripd/tripd_memory.py")
+expansion = _load("tripd_pkg.tripd_expansion", "tripd/tripd_expansion.py")
 
 
 def test_training_log_accumulates(monkeypatch, tmp_path):

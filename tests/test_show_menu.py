@@ -16,11 +16,11 @@ def _load(name: str, file: str):
     return module
 
 
-_load("tripd_pkg.tripd_memory", "tripd_memory.py")
-_load("tripd_pkg.tripd_expansion", "tripd_expansion.py")
-_load("tripd_pkg.tripd", "tripd.py")
-_load("tripd_pkg.verb_stream", "verb_stream.py")
-tg = _load("tripd_pkg.tripd_tg", "tripd_tg.py")
+_load("tripd_pkg.tripd_memory", "tripd/tripd_memory.py")
+_load("tripd_pkg.tripd_expansion", "tripd/tripd_expansion.py")
+_load("tripd_pkg.tripd", "tripd/tripd.py")
+_load("tripd_pkg.verb_stream", "tripd/verb_stream.py")
+tg = _load("tripd_pkg.tripd_tg", "tripd/tripd_tg.py")
 _show_menu = tg._show_menu
 
 

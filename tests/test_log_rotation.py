@@ -15,7 +15,7 @@ def _load(name: str, file: str):
 
 
 def test_log_rotation(monkeypatch, tmp_path):
-    memory = _load("tripd_pkg.tripd_memory", "tripd_memory.py")
+    memory = _load("tripd_pkg.tripd_memory", "tripd/tripd_memory.py")
     log_path = tmp_path / "scripts.log"
     monkeypatch.setattr(memory, "_LOG_PATH", log_path)
     monkeypatch.setattr(memory, "_LOG_MAX_BYTES", 100)

@@ -14,9 +14,9 @@ def _load(name: str, file: str):
     spec.loader.exec_module(module)
     return module
 
-memory = _load("tripd_pkg.tripd_memory", "tripd_memory.py")
-expansion = _load("tripd_pkg.tripd_expansion", "tripd_expansion.py")
-tripd = _load("tripd_pkg.tripd", "tripd.py")
+memory = _load("tripd_pkg.tripd_memory", "tripd/tripd_memory.py")
+expansion = _load("tripd_pkg.tripd_expansion", "tripd/tripd_expansion.py")
+tripd = _load("tripd_pkg.tripd", "tripd/tripd.py")
 TripDModel = tripd.TripDModel
 
 

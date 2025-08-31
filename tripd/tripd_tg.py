@@ -39,7 +39,7 @@ _model = TripDModel()
 _sections: List[str] = sorted(_model.sections)
 
 # Preload README and split into three equal parts
-_README = Path(__file__).resolve().parent / "README.md"
+_README = Path(__file__).resolve().parent.parent / "README.md"
 _text = _README.read_text(encoding="utf-8")
 _chunk = len(_text) // 3
 _readme_parts = [

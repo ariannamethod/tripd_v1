@@ -16,9 +16,9 @@ def _load(name: str, file: str):
     return module
 
 # Load modules under a package name to satisfy relative imports
-_load("tripd_pkg.tripd_memory", "tripd_memory.py")
-_load("tripd_pkg.tripd_expansion", "tripd_expansion.py")
-tripd = _load("tripd_pkg.tripd", "tripd.py")
+_load("tripd_pkg.tripd_memory", "tripd/tripd_memory.py")
+_load("tripd_pkg.tripd_expansion", "tripd/tripd_expansion.py")
+tripd = _load("tripd_pkg.tripd", "tripd/tripd.py")
 TripDModel = tripd.TripDModel
 
 

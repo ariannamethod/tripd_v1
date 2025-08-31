@@ -14,10 +14,10 @@ def _load(name: str, file: str):
     spec.loader.exec_module(module)
     return module
 
-memory = _load("tripd_pkg.tripd_memory", "tripd_memory.py")
-expansion = _load("tripd_pkg.tripd_expansion", "tripd_expansion.py")
-tripd = _load("tripd_pkg.tripd", "tripd.py")
-verb_stream = _load("tripd_pkg.verb_stream", "verb_stream.py")
+memory = _load("tripd_pkg.tripd_memory", "tripd/tripd_memory.py")
+expansion = _load("tripd_pkg.tripd_expansion", "tripd/tripd_expansion.py")
+tripd = _load("tripd_pkg.tripd", "tripd/tripd.py")
+verb_stream = _load("tripd_pkg.verb_stream", "tripd/verb_stream.py")
 TripDModel = tripd.TripDModel
 start_verb_stream = verb_stream.start_verb_stream
 

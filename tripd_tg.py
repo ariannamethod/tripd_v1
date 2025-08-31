@@ -80,6 +80,8 @@ async def _send_section(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await query.message.reply_text(
         f"```TRIPD\n{script}\n```", parse_mode="Markdown"
     )
+    # Показываем меню снова после генерации из секции
+    await query.message.reply_text("⚡", reply_markup=_menu_keyboard())
 
 
 # ---------------------------------------------------------------------------
@@ -90,21 +92,23 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     index = int(query.data.split(":", 1)[1])
     logger.info("Theory section %d requested", index)
     text = _readme_parts[index]
-    buttons = []
+    
+    # Создаем кнопки навигации как в книге
+    nav_buttons = []
     if index > 0:
-        buttons.append(
-            InlineKeyboardButton("Back", callback_data=f"theory:{index - 1}")
-        )
+        nav_buttons.append(InlineKeyboardButton("◀️", callback_data=f"theory:{index - 1}"))
     else:
-        buttons.append(InlineKeyboardButton("Back", callback_data="menu"))
+        nav_buttons.append(InlineKeyboardButton("◀️", callback_data="theory:2"))  # Зацикливаем
+    
+    nav_buttons.append(InlineKeyboardButton("⚡", callback_data="menu"))
+    
     if index < 2:
-        buttons.append(
-            InlineKeyboardButton("Forward", callback_data=f"theory:{index + 1}")
-        )
+        nav_buttons.append(InlineKeyboardButton("▶️", callback_data=f"theory:{index + 1}"))
     else:
-        buttons.append(InlineKeyboardButton("Forward", callback_data="menu"))
+        nav_buttons.append(InlineKeyboardButton("▶️", callback_data="theory:0"))  # Зацикливаем
+    
     await query.edit_message_text(
-        text, reply_markup=InlineKeyboardMarkup([buttons])
+        text, reply_markup=InlineKeyboardMarkup([nav_buttons])
     )
 
 
@@ -119,6 +123,8 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"```TRIPD\n{script}\n```", parse_mode="Markdown"
     )
     await update.message.reply_text(metrics_text)
+    # Показываем меню снова после генерации
+    await update.message.reply_text("⚡", reply_markup=_menu_keyboard())
 
 
 # ---------------------------------------------------------------------------

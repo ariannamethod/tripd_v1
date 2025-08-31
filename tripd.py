@@ -137,8 +137,18 @@ class TripDModel:
         return names[index % len(names)]
 
     # ------------------------------------------------------------------
-    def generate_script(self, message: str) -> str:
-        metrics = self.metrics(message)
+    def generate_script(self, message: str, metrics: Dict[str, float] | None = None) -> str:
+        """Create a TRIPD script from a message.
+
+        Parameters
+        ----------
+        message:
+            Input text used to influence command selection.
+        metrics:
+            Optional precomputed metrics for ``message``.  Providing this avoids
+            recalculating metrics when they are needed elsewhere.
+        """
+        metrics = metrics or self.metrics(message)
         section = self._choose_section(metrics)
         k = min(4, len(self.sections[section]))
         commands = self.simulator.sample(self.sections[section], k)
@@ -172,6 +182,14 @@ class TripDModel:
         if get_log_count() % 5 == 0:
             train_async()
         return script
+
+    # ------------------------------------------------------------------
+    def generate_response(self, message: str) -> tuple[str, str]:
+        """Produce a TRIPD script and formatted metrics for ``message``."""
+        metrics = self.metrics(message)
+        script = self.generate_script(message, metrics=metrics)
+        metrics_text = ", ".join(f"{k}: {v:.3f}" for k, v in metrics.items())
+        return script, metrics_text
 
     # ------------------------------------------------------------------
     def set_quantum_drift(self, drift: float) -> None:

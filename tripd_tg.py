@@ -110,20 +110,15 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 # ---------------------------------------------------------------------------
-# Message echo with metric-based font selection
+# Message handling delegated to the TRIPD model
 async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     assert update.message
     text = update.message.text or ""
     logger.info("Received message: %s", text)
-    metrics = _model.metrics(text)
-    if metrics["entropy"] > 4.5:
-        formatted = f"<b>{text}</b>"
-    elif metrics["perplexity"] > 10:
-        formatted = f"<i>{text}</i>"
-    else:
-        formatted = f"<code>{text}</code>"
-    await update.message.reply_text(formatted, parse_mode="HTML")
-    metrics_text = ", ".join(f"{k}: {v:.3f}" for k, v in metrics.items())
+    script, metrics_text = _model.generate_response(text)
+    await update.message.reply_text(
+        f"```python\n{script}\n```", parse_mode="Markdown"
+    )
     await update.message.reply_text(metrics_text)
 
 

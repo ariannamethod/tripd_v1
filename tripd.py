@@ -157,7 +157,9 @@ class TripDModel:
             commands += random.sample(pool, 4 - k)
         extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
         lines = [f"    {cmd}" for cmd in commands + extra]
-        script = "def tripd_script():\n" + "\n".join(lines) + "\n"
+        selector = int(metrics["selector"])
+        func_name = f"tripd_{selector}_{get_log_count()}"
+        script = f"def {func_name}():\n" + "\n".join(lines) + "\n"
 
         log_script(script)
         if get_log_count() % 5 == 0:
@@ -176,7 +178,9 @@ class TripDModel:
             commands += random.sample(pool, 4 - k)
         extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
         lines = [f"    {cmd}" for cmd in commands + extra]
-        script = "def tripd_script():\n" + "\n".join(lines) + "\n"
+        safe = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in section)
+        func_name = f"tripd_{safe}_{get_log_count()}"
+        script = f"def {func_name}():\n" + "\n".join(lines) + "\n"
 
         log_script(script)
         if get_log_count() % 5 == 0:

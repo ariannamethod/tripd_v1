@@ -8,7 +8,7 @@ A bundled tripdictionary enumerates verbs that shape perception across diverse d
 
 On startup the model reads this dictionary to form its initial phrase repertoire. It also improvises with an internal pool of verbs to maintain semantic drift. Incoming messages are analysed for entropy, resonance, and perplexity. These metrics determine which dictionary section will guide the script.
 
-Generated scripts conform to Python syntax while carrying tripd's surreal verbs. The memory module ensures that a script is never produced twice. Logged outputs accumulate as JSON lines for transparent review. After every five unique scripts the system triggers a background training pass.
+Generated scripts conform to Python syntax while carrying tripd's surreal verbs. Function names weave in message metrics and the current log count, so each script arrives with a unique signature. The memory module ensures that a script is never produced twice. Logged outputs accumulate as JSON lines for transparent review. After every five unique scripts the system triggers a background training pass.
 
 Training is asynchronous so user interaction remains responsive. The expansion module currently simulates fine-tuning and records its activity. A real deployment could integrate a lightweight trainer if deeper learning is desired.
 

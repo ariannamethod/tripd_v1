@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from threading import Thread
 from typing import Iterable
+from datetime import datetime
 import time
 
 from .tripd_memory import load_scripts
@@ -22,8 +23,8 @@ def _train_on_scripts(scripts: Iterable[str]) -> None:
     # A realistic implementation would invoke torch/transformers here.
     scripts = list(scripts)
     time.sleep(0.1)  # Simulate a bit of work.
-    timestamp = int(time.time())
-    with open(_TRAIN_LOG, "a", encoding="utf-8") as fh:
+    timestamp = datetime.now().isoformat()
+    with _TRAIN_LOG.open("a", encoding="utf-8") as fh:
         fh.write(f"{timestamp}\t{len(scripts)}\n")
 
 

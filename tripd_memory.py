@@ -71,14 +71,20 @@ def _load_cache() -> None:
 
 
 def load_scripts() -> List[str]:
-    """Return a list of all previously generated scripts."""
-    _load_cache()
+    """Return a list of all previously generated scripts.
+
+    The result is a shallow copy of the in-memory list so callers can mutate
+    it without affecting the cache.
+    """
     return list(_SCRIPT_LIST)
 
 
 def log_script(script: str) -> None:
-    """Persist a script if it has not been seen before."""
-    _load_cache()
+    """Persist *script* if it has not been seen before.
+
+    Membership checks are serviced entirely from the in-memory index so the
+    log file is not re-read on each call.
+    """
     script_hash = _hash_script(script)
     if script_hash in _SCRIPTS_INDEX:
         return
@@ -92,7 +98,6 @@ def log_script(script: str) -> None:
 
 def get_log_count() -> int:
     """Return how many unique scripts have been recorded."""
-    _load_cache()
     return len(_SCRIPTS_INDEX)
 
 

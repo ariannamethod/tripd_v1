@@ -78,7 +78,7 @@ async def _send_section(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     section = query.data.split(":", 1)[1]
     logger.info("Section requested: %s", section)
     script = _model.generate_from_section(section)
-    await query.edit_message_text(
+    await query.message.reply_text(
         f"```TRIPD\n{script}\n```", parse_mode="Markdown"
     )
 

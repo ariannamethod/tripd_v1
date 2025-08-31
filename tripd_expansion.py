@@ -13,7 +13,10 @@ from typing import Iterable
 from datetime import datetime
 import time
 
-from .tripd_memory import load_scripts
+try:  # pragma: no cover - allow execution outside a package
+    from .tripd_memory import load_scripts
+except ImportError:  # pragma: no cover - fallback when run as script
+    from tripd_memory import load_scripts
 
 _TRAIN_LOG = Path(__file__).resolve().parent / "training.log"
 

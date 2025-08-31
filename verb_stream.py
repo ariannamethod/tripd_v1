@@ -7,7 +7,10 @@ import socket
 import threading
 from typing import Optional
 
-from .tripd import TripDModel  # type: ignore
+try:  # pragma: no cover - prefer package import
+    from .tripd import TripDModel  # type: ignore
+except ImportError:  # pragma: no cover - fallback when run directly
+    from tripd import TripDModel  # type: ignore
 
 
 def _handle_conn(conn: socket.socket, model: TripDModel) -> None:

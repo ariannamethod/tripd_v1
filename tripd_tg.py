@@ -22,8 +22,12 @@ from telegram.ext import (
     filters,
 )
 
-from .tripd import TripDModel
-from .verb_stream import start_verb_stream
+try:  # pragma: no cover - support package and script execution
+    from .tripd import TripDModel
+    from .verb_stream import start_verb_stream
+except ImportError:  # pragma: no cover - fallback for running as scripts
+    from tripd import TripDModel
+    from verb_stream import start_verb_stream
 
 # ---------------------------------------------------------------------------
 # Model and dictionary setup

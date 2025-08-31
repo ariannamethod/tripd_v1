@@ -80,8 +80,6 @@ async def _send_section(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await query.message.reply_text(
         f"```TRIPD\n{script}\n```", parse_mode="Markdown"
     )
-    # Показываем меню снова после генерации из секции
-    await query.message.reply_text("⚡", reply_markup=_menu_keyboard())
 
 
 # ---------------------------------------------------------------------------
@@ -123,13 +121,11 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"```TRIPD\n{script}\n```", parse_mode="Markdown"
     )
     await update.message.reply_text(metrics_text)
-    # Показываем меню снова после генерации
-    await update.message.reply_text("⚡", reply_markup=_menu_keyboard())
 
 
 # ---------------------------------------------------------------------------
 async def _post_init(app: Application) -> None:
-    await app.bot.set_my_commands([BotCommand("tripd", "GO!")])
+    await app.bot.set_my_commands([BotCommand("tripd", "Open TRIPD menu")])
 
 
 def main() -> None:

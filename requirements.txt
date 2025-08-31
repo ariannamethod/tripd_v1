@@ -1,2 +1,3 @@
 torch==2.2.1+cpu
 transformers==4.38.2
+python-telegram-bot==20.7

@@ -101,7 +101,7 @@ async def _send_theory(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     assert update.message
     text = update.message.text or ""
-    metrics = _model._metrics(text)
+    metrics = _model.metrics(text)
     if metrics["entropy"] > 4.5:
         formatted = f"<b>{text}</b>"
     elif metrics["perplexity"] > 10:

@@ -25,6 +25,9 @@ class TripDModel:
         base = Path(__file__).resolve().parent
         path = dictionary_path or base / "tripdictionary.md"
         self.sections = self._load_dictionary(path)
+        self.all_commands = [
+            cmd for cmds in self.sections.values() for cmd in cmds
+        ]
         self.extra_verbs = [
             "wander_verse()",
             "spark_improv()",
@@ -82,7 +85,11 @@ class TripDModel:
     def generate_script(self, message: str) -> str:
         metrics = self.metrics(message)
         section = self._choose_section(metrics)
-        commands = random.sample(self.sections[section], 4)
+        k = min(4, len(self.sections[section]))
+        commands = random.sample(self.sections[section], k)
+        if k < 4:
+            pool = [cmd for cmd in self.all_commands if cmd not in commands]
+            commands += random.sample(pool, 4 - k)
         extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
         lines = [f"    {cmd}" for cmd in commands + extra]
         script = "def tripd_script():\n" + "\n".join(lines) + "\n"
@@ -97,7 +104,11 @@ class TripDModel:
         """Create a TRIPD script using commands from a specific section."""
         if section not in self.sections:
             raise KeyError(f"Unknown section: {section}")
-        commands = random.sample(self.sections[section], 4)
+        k = min(4, len(self.sections[section]))
+        commands = random.sample(self.sections[section], k)
+        if k < 4:
+            pool = [cmd for cmd in self.all_commands if cmd not in commands]
+            commands += random.sample(pool, 4 - k)
         extra = random.sample(self.extra_verbs, max(1, len(commands) // 5))
         lines = [f"    {cmd}" for cmd in commands + extra]
         script = "def tripd_script():\n" + "\n".join(lines) + "\n"

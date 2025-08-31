@@ -137,7 +137,15 @@ def main() -> None:
         metavar="ADDR",
         help="Enable live verb streaming via TCP port or UNIX socket path",
     )
+    parser.add_argument(
+        "--token",
+        help=(
+            "Telegram bot token. Overrides TELEGRAM_TOKEN environment "
+            "variable if provided."
+        ),
+    )
     args = parser.parse_args()
+
     if args.verb_stream:
         addr = args.verb_stream
         if addr.isdigit():
@@ -145,9 +153,11 @@ def main() -> None:
         else:
             start_verb_stream(_model, unix_socket=addr)
 
-    token = os.environ.get("TELEGRAM_TOKEN")
+    token = args.token or os.environ.get("TELEGRAM_TOKEN")
     if not token:
-        raise RuntimeError("TELEGRAM_TOKEN environment variable is required")
+        raise RuntimeError(
+            "Telegram token required via --token or TELEGRAM_TOKEN environment variable"
+        )
     application = (
         Application.builder()
         .token(token)

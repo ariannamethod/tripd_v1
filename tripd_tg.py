@@ -253,8 +253,9 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 # ---------------------------------------------------------------------------
 async def _post_init(app: Application) -> None:
-    # Replace /tripd with /letters in the Menu button
+    # Expose both /tripd and /letters in the Menu button
     await app.bot.set_my_commands([
+        BotCommand("tripd", "TRIPD"),
         BotCommand("letters", "GET A LETTER 👉"),
     ])
 
@@ -292,10 +293,10 @@ def main() -> None:
         .post_init(_post_init)
         .build()
     )
-    # Keep /tripd handler for backward compat, but it won't appear in Menu BUTTON
+    # /tripd handler (now also appears in Menu button)
     application.add_handler(CommandHandler("tripd", _show_menu))
     application.add_handler(CommandHandler("start", _show_menu))
-    # Add /letters to the Menu BUTTON; keep /letter for manual typing
+    # /letters also appears in the Menu button; keep /letter for manual typing
     application.add_handler(CommandHandler("letters", _letter_command))
     application.add_handler(CommandHandler("letter", _letter_command))
     application.add_handler(CallbackQueryHandler(_show_menu, pattern="^menu$"))

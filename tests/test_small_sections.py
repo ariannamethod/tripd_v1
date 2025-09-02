@@ -1,6 +1,7 @@
 import importlib.util
 import sys
 import random
+import re
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,28 @@ tripd = _load("tripd_pkg.tripd", "tripd.py")
 TripDModel = tripd.TripDModel
 
 
+def _extract_tripd_commands(script: str, model: TripDModel) -> list[str]:
+    """Extract TRIPD command calls from a generated script."""
+    # Get all known commands
+    all_known_commands = model.all_commands + model.extra_verbs
+    
+    # Find function calls in the script
+    tripd_commands = []
+    lines = script.splitlines()
+    
+    for line in lines:
+        line = line.strip()
+        # Look for function calls that match known commands
+        for cmd in all_known_commands:
+            if cmd in line and line.endswith("()"):
+                # Make sure it's actually the command and not part of a string/comment
+                if not line.startswith('"') and not line.startswith('#'):
+                    tripd_commands.append(cmd)
+                    break
+    
+    return tripd_commands
+
+
 @pytest.mark.parametrize("num_cmds", [1, 2, 3])
 def test_generate_from_small_section(tmp_path, num_cmds):
     memory._LOG_PATH = tmp_path / "scripts.log"
@@ -32,14 +55,18 @@ def test_generate_from_small_section(tmp_path, num_cmds):
     model = TripDModel(path)
     random.seed(0)
     script = model.generate_from_section("small")
-    lines = [line.strip() for line in script.splitlines()[1:] if line.strip()]
-    extra_set = set(model.extra_verbs)
-    commands = [line for line in lines if line not in extra_set]
-
-    assert len(commands) == 4
+    commands = _extract_tripd_commands(script, model)
+    
+    # With the new dynamic sizing, we expect 6-14 commands depending on metrics
+    # For the simple test case, it should be at least 6 commands
+    assert len(commands) >= 6
+    
+    # Check that the section commands are present
     for i in range(num_cmds):
         assert f"cmd{i}()" in commands
-    if num_cmds < 4:
+    
+    # Should also have some from the pool when section is small
+    if num_cmds < 6:
         assert any(f"pool{i}()" in commands for i in range(4))
 
 
@@ -57,12 +84,15 @@ def test_generate_script_with_small_section(tmp_path, num_cmds):
     random.seed(0)
     model._choose_section = lambda metrics: "small"
     script = model.generate_script("msg")
-    lines = [line.strip() for line in script.splitlines()[1:] if line.strip()]
-    extra_set = set(model.extra_verbs)
-    commands = [line for line in lines if line not in extra_set]
-
-    assert len(commands) == 4
+    commands = _extract_tripd_commands(script, model)
+    
+    # With the new dynamic sizing, we expect 6-14 commands depending on metrics
+    assert len(commands) >= 6
+    
+    # Check that the section commands are present  
     for i in range(num_cmds):
         assert f"cmd{i}()" in commands
-    if num_cmds < 4:
+    
+    # Should also have some from global pool when section is small
+    if num_cmds < 6:
         assert any(f"pool{i}()" in commands for i in range(4))

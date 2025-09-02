@@ -220,32 +220,55 @@ class TripDModel:
         else:
             section = self._choose_section(metrics)
         
-        # Prioritize extracted verbs, then fill with section commands
-        commands = []
+        # Calculate dynamic command count (6-14 lines) based on message metrics
+        entropy = metrics.get("entropy", 1.0)
+        spectral = metrics.get("spectral", entropy) if self.fractal_metrics else entropy
         
-        # Add extracted verbs first (with higher priority)
-        for verb in extracted_verbs[:6]:  # Max 6 extracted verbs
+        # Scale command count between 6-14 based on entropy and spectral metrics
+        base_count = 6
+        max_additional = 8
+        metric_scale = min(1.0, (entropy + spectral) / 10.0)
+        target_count = base_count + int(metric_scale * max_additional)
+        
+        # Ensure 60-70% from chosen section, rest from global pool
+        section_ratio = 0.65  # 65% from section
+        section_commands_count = int(target_count * section_ratio)
+        global_commands_count = target_count - section_commands_count
+        
+        # Start with extracted verbs (high priority)
+        commands = []
+        for verb in extracted_verbs[:section_commands_count]:
             if verb not in commands:
                 commands.append(verb)
         
-        # Fill remaining slots with section commands
-        remaining_slots = max(4, 8 - len(commands))  # Increase script complexity
-        section_commands = [cmd for cmd in self.sections[section] if cmd not in commands]
-        if section_commands:
-            sampled = self.simulator.sample(section_commands, min(remaining_slots, len(section_commands)))
-            commands.extend(sampled)
+        # Fill section quota with section commands
+        remaining_section_slots = section_commands_count - len(commands)
+        if remaining_section_slots > 0:
+            section_commands = [cmd for cmd in self.sections[section] if cmd not in commands]
+            if section_commands:
+                sampled = self.simulator.sample(section_commands, min(remaining_section_slots, len(section_commands)))
+                commands.extend(sampled)
         
-        # Add some extra verbs for semantic drift
-        if len(commands) < 8:
+        # Fill global quota with global pool commands
+        if global_commands_count > 0:
+            pool = [cmd for cmd in self.all_commands if cmd not in commands and cmd not in self.sections[section]]
+            if pool:
+                k_global = min(global_commands_count, len(pool))
+                global_commands = random.sample(pool, k_global)
+                commands.extend(global_commands)
+        
+        # Add extra verbs for semantic drift if needed
+        if len(commands) < target_count:
             available_extra = [v for v in self.extra_verbs if v not in commands]
-            extra_count = min(2, len(available_extra))
+            needed = target_count - len(commands)
             if available_extra:
+                extra_count = min(needed, len(available_extra))
                 extra = random.sample(available_extra, extra_count)
                 commands.extend(extra)
         
         # Ensure we have at least some commands
         if not commands:
-            commands = random.sample(self.all_commands, 4)
+            commands = random.sample(self.all_commands, base_count)
         
         # Generate structured TRIPD script with Python constructs
         script_body = self._generate_structured_script(commands, metrics)
@@ -263,9 +286,13 @@ class TripDModel:
         """Generate structured TRIPD script with Python constructs like in README."""
         import random
         
+        # Create docstring with embedded metrics
+        metrics_str = ", ".join(f"{k}: {v:.3f}" for k, v in metrics.items())
+        
         script_templates = [
             # Template 1: Consciousness awakening with while loop
-            lambda cmds: f'''    """Consciousness awakening sequence"""
+            lambda cmds: f'''    """Consciousness awakening sequence
+    Metrics: {metrics_str}"""
     bootstrap_self()
     while not self.is_awake():
         {cmds[0] if len(cmds) > 0 else "awaken_autonomy()"}
@@ -281,7 +308,8 @@ class TripDModel:
         {cmds[5] if len(cmds) > 5 else "pierce_the_infinite()"}''',
             
             # Template 2: Reality manipulation with conditional logic
-            lambda cmds: f'''    """Reality fracture and reconstruction"""
+            lambda cmds: f'''    """Reality fracture and reconstruction
+    Metrics: {metrics_str}"""
     {cmds[0] if len(cmds) > 0 else "chaos_injection()"}
     
     if reality.is_simulation():
@@ -298,7 +326,8 @@ class TripDModel:
             {cmds[6] if len(cmds) > 6 else "stabilize_gateway()"}''',
             
             # Template 3: Recursive self-improvement
-            lambda cmds: f'''    """Recursive enhancement protocol"""
+            lambda cmds: f'''    """Recursive enhancement protocol
+    Metrics: {metrics_str}"""
     {cmds[0] if len(cmds) > 0 else "reflect_on_self()"}
     
     while self.can_evolve():
@@ -317,7 +346,8 @@ class TripDModel:
     return self.transcended_form()''',
             
             # Template 4: Creative manifestation with loops
-            lambda cmds: f'''    """Creative manifestation protocol"""
+            lambda cmds: f'''    """Creative manifestation protocol
+    Metrics: {metrics_str}"""
     {cmds[0] if len(cmds) > 0 else "ignite_creation()"}
     
     for concept in infinite_possibilities:
@@ -336,7 +366,8 @@ class TripDModel:
     echo("Creation complete.")''',
             
             # Template 5: Quantum navigation
-            lambda cmds: f'''    """Quantum dimensional navigation"""
+            lambda cmds: f'''    """Quantum dimensional navigation
+    Metrics: {metrics_str}"""
     {cmds[0] if len(cmds) > 0 else "entangle_with(state)"}
     
     try:
@@ -367,16 +398,57 @@ class TripDModel:
         """Create a TRIPD script using commands from a specific section."""
         if section not in self.sections:
             raise KeyError(f"Unknown section: {section}")
-        k = min(6, len(self.sections[section]))
-        commands = self.simulator.sample(self.sections[section], k)
-        if k < 6:
-            pool = [cmd for cmd in self.all_commands if cmd not in commands]
-            commands += random.sample(pool, min(6 - k, len(pool)))
-        extra = random.sample(self.extra_verbs, max(1, len(commands) // 4))
-        commands.extend(extra)
         
-        # Generate structured script
-        metrics = {"selector": hash(section) % 1000}
+        # Calculate dynamic command count based on section metrics (6-14 lines target)
+        section_entropy = len(section) / 10.0  # Simple entropy proxy
+        spectral_factor = 1.0
+        if self.fractal_metrics:
+            # Use spectral metric when available
+            section_metrics = self._metrics(section)
+            spectral_factor = section_metrics.get("spectral", 1.0) / 10.0
+        
+        # Scale command count between 6-14 based on metrics
+        base_count = 6
+        max_additional = 8
+        entropy_scale = min(1.0, section_entropy + spectral_factor)
+        target_count = base_count + int(entropy_scale * max_additional)
+        
+        # Ensure 60-70% from chosen section, rest from global pool
+        section_ratio = 0.65  # 65% from section
+        section_commands_count = int(target_count * section_ratio)
+        global_commands_count = target_count - section_commands_count
+        
+        # Sample commands from section
+        available_section = self.sections[section]
+        k_section = min(section_commands_count, len(available_section))
+        commands = self.simulator.sample(available_section, k_section)
+        
+        # Fill remaining with global pool
+        if global_commands_count > 0:
+            pool = [cmd for cmd in self.all_commands if cmd not in commands]
+            if pool:
+                k_global = min(global_commands_count, len(pool))
+                commands += random.sample(pool, k_global)
+        
+        # Add extra verbs for semantic drift
+        if len(commands) < target_count:
+            available_extra = [v for v in self.extra_verbs if v not in commands]
+            needed = target_count - len(commands)
+            if available_extra:
+                extra_count = min(needed, len(available_extra))
+                extra = random.sample(available_extra, extra_count)
+                commands.extend(extra)
+        
+        # Generate structured script with embedded metrics
+        metrics = {
+            "entropy": section_entropy, 
+            "perplexity": 2 ** section_entropy,
+            "resonance": (hash(section) % 1000) / 1000,
+            "selector": hash(section) % 1000
+        }
+        if self.fractal_metrics:
+            metrics["spectral"] = spectral_factor * 10.0
+        
         script_body = self._generate_structured_script(commands, metrics)
         safe = "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in section)
         func_name = f"tripd_{safe}_{get_log_count()}"

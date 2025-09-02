@@ -16,7 +16,7 @@ def _load(name: str, file: str):
 _load("tripd_pkg.tripd_memory", "tripd_memory.py")
 _load("tripd_pkg.tripd_expansion", "tripd_expansion.py")
 _load("tripd_pkg.tripd", "tripd.py")
-_load("tripd_pkg.verb_stream", "verb_stream.py")
+# verb_stream functionality is now part of tripd.py
 tg = _load("tripd_pkg.tripd_tg", "tripd_tg.py")
 _handle_message = tg._handle_message
 

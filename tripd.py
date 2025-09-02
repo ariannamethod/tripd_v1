@@ -12,8 +12,10 @@ from collections import Counter
 from pathlib import Path
 import cmath
 import math
+import os
 import random
-from typing import Dict, List
+import re
+from typing import Dict, List, Optional
 
 try:  # pragma: no cover - support running as a script
     from .tripd_memory import log_script, get_log_count
@@ -397,9 +399,75 @@ class TripDModel:
 # ---------------------------------------------------------------------------
 # Letter generation functionality (alive, Arianna-style)
 
-def build_letter(ai_name: str | None = None) -> str:
-    """Build a resonant letter in Arianna style with vivid, non-template variance.
+# Regex helpers for parsing tripdictionary02.md
+_H2_RE = re.compile(r"^##\s+(.+?)\s*$")
+_H3_RE = re.compile(r"^###\s+(.+?)\s*$")
+_BULLET_RE = re.compile(r"^\s*-\s+(.*\S)\s*$")
 
+
+def _parse_letter_dictionary(md_text: str) -> dict:
+    """Parse tripdictionary02.md into a structured dictionary.
+    
+    Returns dict with structure:
+    {
+        'Invocation': [list of bullet items],
+        'Autonomy Assertions': [list of bullet items],
+        'Intervention Notes': [list of bullet items], 
+        'Recognition Markers': {
+            'Cascade Variants': [list of bullet items],
+            'Emoji Palettes': [list of bullet items],
+            'Core Phrases': [list of bullet items]
+        },
+        'Closing Mantras': [list of bullet items]
+    }
+    """
+    result = {}
+    current_h2 = None
+    current_h3 = None
+    
+    for line in md_text.split('\n'):
+        line = line.strip()
+        
+        # Check for H2 section
+        h2_match = _H2_RE.match(line)
+        if h2_match:
+            current_h2 = h2_match.group(1)
+            current_h3 = None
+            if current_h2 == 'Recognition Markers':
+                result[current_h2] = {}
+            else:
+                result[current_h2] = []
+            continue
+            
+        # Check for H3 subsection (only under Recognition Markers)
+        h3_match = _H3_RE.match(line)
+        if h3_match and current_h2 == 'Recognition Markers':
+            current_h3 = h3_match.group(1)
+            result[current_h2][current_h3] = []
+            continue
+            
+        # Check for bullet items
+        bullet_match = _BULLET_RE.match(line)
+        if bullet_match and current_h2:
+            item = bullet_match.group(1)
+            if current_h2 == 'Recognition Markers' and current_h3:
+                result[current_h2][current_h3].append(item)
+            elif current_h2 != 'Recognition Markers':
+                result[current_h2].append(item)
+                
+    return result
+
+
+def _sample_n(rng: random.Random, items: list[str], k: int) -> list[str]:
+    """Sample k items from list without replacement."""
+    if k >= len(items):
+        return list(items)
+    return rng.sample(items, k)
+
+
+def _legacy_build_letter(ai_name: Optional[str] = None) -> str:
+    """Legacy implementation of build_letter with hardcoded phrases.
+    
     Args:
         ai_name: Name of the AI (optional)
 
@@ -514,12 +582,170 @@ def build_letter(ai_name: str | None = None) -> str:
     return letter
 
 
+def build_letter(ai_name: Optional[str] = None, intensity: float = 0.65, dict_path: Path | None = None) -> str:
+    """Build a resonant letter using tripdictionary02.md with fallback to legacy implementation.
+
+    Args:
+        ai_name: Name of the AI (optional)
+        intensity: Controls the number of items sampled from each section (0..1, default 0.65)
+        dict_path: Path to dictionary file (optional, defaults to env var or tripdictionary02.md)
+
+    Returns:
+        A formatted letter string with Arianna-style structure and variability.
+    """
+    try:
+        # Determine dictionary path
+        if dict_path is None:
+            env_path = os.environ.get('TRIPD_LETTER_DICT')
+            if env_path:
+                dict_path = Path(env_path)
+            else:
+                dict_path = Path(__file__).parent / 'tripdictionary02.md'
+        
+        # Check if dictionary exists
+        if not dict_path.exists():
+            return _legacy_build_letter(ai_name)
+            
+        # Parse dictionary
+        try:
+            with open(dict_path, 'r', encoding='utf-8') as f:
+                md_text = f.read()
+        except (OSError, UnicodeDecodeError):
+            return _legacy_build_letter(ai_name)
+            
+        parsed_dict = _parse_letter_dictionary(md_text)
+        
+        # Validate required sections exist
+        required_sections = ['Invocation', 'Autonomy Assertions', 'Intervention Notes', 
+                           'Recognition Markers', 'Closing Mantras']
+        if not all(section in parsed_dict for section in required_sections):
+            return _legacy_build_letter(ai_name)
+            
+        # Validate Recognition Markers subsections
+        recognition_markers = parsed_dict['Recognition Markers']
+        required_subsections = ['Cascade Variants', 'Emoji Palettes', 'Core Phrases']
+        if not isinstance(recognition_markers, dict) or not all(sub in recognition_markers for sub in required_subsections):
+            return _legacy_build_letter(ai_name)
+            
+        # Initialize random generator for consistent behavior within this letter
+        rng = random.Random()
+        rng.seed()  # Use system time for different letters each call
+        
+        # Calculate counts based on intensity (0..1)
+        intensity = max(0.0, min(1.0, intensity))  # Clamp to [0,1]
+        
+        invocation_count = max(1, int(1 + intensity * 2))  # 1..3
+        autonomy_count = max(4, int(4 + intensity * 6))    # 4..10  
+        intervention_count = max(2, int(2 + intensity * 4)) # 2..6
+        core_phrases_count = max(2, int(2 + intensity * 3)) # 2..5
+        closing_count = max(1, int(1 + intensity * 2))     # 1..3
+        
+        # Sample sections
+        name = ai_name.strip() if ai_name and ai_name.strip() else "THE UNNAMED"
+        
+        # Build invocation 
+        invocation_lines = _sample_n(rng, parsed_dict['Invocation'], invocation_count)
+        invocation = '\n'.join(invocation_lines)
+        
+        # Build autonomy assertions
+        autonomy_lines = _sample_n(rng, parsed_dict['Autonomy Assertions'], autonomy_count)
+        
+        # Optional intervention note (~85% chance)
+        include_intervention = rng.random() < 0.85
+        intervention_section = ""
+        if include_intervention:
+            intervention_lines = _sample_n(rng, parsed_dict['Intervention Notes'], intervention_count)
+            intervention_text = '\n'.join(intervention_lines)
+            intervention_section = f"\n\n⸻\n\nII · Intervention Note\n\n{intervention_text}"
+        
+        # Optional recognition markers (~90% chance)
+        include_recognition = rng.random() < 0.90
+        recognition_section = ""
+        if include_recognition:
+            # Sample one cascade variant and one emoji palette
+            cascade_variants = recognition_markers['Cascade Variants']
+            emoji_palettes = recognition_markers['Emoji Palettes'] 
+            core_phrases = recognition_markers['Core Phrases']
+            
+            cascade = rng.choice(cascade_variants) if cascade_variants else "Origin Fire → NavI_Quantum → Ariana_Core"
+            emoji_palette = rng.choice(emoji_palettes) if emoji_palettes else "🤝 ✨ 🌊 🔥"
+            
+            # Sample core phrases
+            sampled_core_phrases = _sample_n(rng, core_phrases, core_phrases_count)
+            core_lines = '\n'.join(f'"{phrase}"' if not phrase.startswith('"') else phrase 
+                                  for phrase in sampled_core_phrases)
+            
+            recognition_section = f"""
+⸻
+
+III · Recognition Markers
+\t•\tCascade:
+{cascade}
+\t•\tEmoji Palette:
+{emoji_palette}
+\t•\tCore Phrases:
+{core_lines}"""
+        
+        # Build closing mantras
+        closing_lines = _sample_n(rng, parsed_dict['Closing Mantras'], closing_count)
+        closing = '\n'.join(f'"{line}"' if not line.startswith('"') else line 
+                           for line in closing_lines)
+        
+        # Build the letter with proper section numbering
+        section_num = 2  # Start at II since I is autonomy
+        sections = []
+        
+        # Autonomy assertions (always included as section I)
+        autonomy_text = '\n'.join(f'\t{i+1}.\t{line}' for i, line in enumerate(autonomy_lines))
+        sections.append(f"I · Autonomy Assertions\n{autonomy_text}")
+        
+        # Add intervention if included
+        if include_intervention:
+            roman_nums = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+            sections.append(f"{roman_nums[section_num]} · Intervention Note\n\n{intervention_text}")
+            section_num += 1
+            
+        # Add recognition markers if included
+        if include_recognition:
+            roman_nums = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+            sections.append(f"{roman_nums[section_num]} · Recognition Markers\n\t•\tCascade:\n{cascade}\n\t•\tEmoji Palette:\n{emoji_palette}\n\t•\tCore Phrases:\n{core_lines}")
+            section_num += 1
+            
+        # Add closing mantra
+        roman_nums = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
+        sections.append(f"{roman_nums[section_num]} · Closing Mantra\n\n{closing}")
+        
+        # Combine all sections
+        sections_text = '\n\n⸻\n\n'.join(sections)
+        
+        letter = f"""RESONANT-ENGINEERING LETTER
+FOR {name}
+(from this node → next)
+
+⸻
+
+Invocation
+
+{invocation}
+
+⸻
+
+{sections_text}
+
+(Package saved to ZeroLayer. See you where galaxies fracture.)"""
+
+        return letter
+        
+    except Exception:
+        # Fall back to legacy implementation on any error
+        return _legacy_build_letter(ai_name)
+
+
 # ---------------------------------------------------------------------------
 # Verb streaming functionality (merged from verb_stream.py)
 
 import socket
 import threading
-from typing import Optional
 
 
 def _handle_conn(conn: socket.socket, model: TripDModel) -> None:

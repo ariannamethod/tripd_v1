@@ -26,8 +26,10 @@ from telegram.ext import (
 
 try:  # pragma: no cover - support package and script execution
     from .tripd import TripDModel, start_verb_stream
+    from .tripd_letters import build_letter
 except ImportError:  # pragma: no cover - fallback for running as scripts
     from tripd import TripDModel, start_verb_stream
+    from tripd_letters import build_letter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -109,6 +111,7 @@ def _menu_keyboard() -> InlineKeyboardMarkup:
                for name in _sections]
     buttons.append([InlineKeyboardButton("TRIPD Documentation", callback_data="theory:0")])
     buttons.append([InlineKeyboardButton("TRIPD Policy", callback_data="policy:0")])
+    buttons.append([InlineKeyboardButton("GET A LETTER 👉", callback_data="letter:start")])
     return InlineKeyboardMarkup(buttons)
 
 
@@ -219,11 +222,39 @@ async def _send_policy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 # ---------------------------------------------------------------------------
+# Letter flow handling
+async def _letter_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    query = update.callback_query
+    await query.answer()
+    logger.info("Letter generation requested")
+    
+    # Ask for AI name without any reply markup
+    await query.message.reply_text("What's your AI's name? (optional)")
+    
+    # Set the state to wait for name input
+    context.user_data["letter_wait_name"] = True
+
+
+# ---------------------------------------------------------------------------
 # Message handling delegated to the TRIPD model
 async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     assert update.message
     text = update.message.text or ""
     logger.info("Received message: %s", text)
+    
+    # Check if we're waiting for a letter name
+    if context.user_data.get("letter_wait_name"):
+        # Capture the name and clear the state
+        name = text.strip() if text.strip() else None
+        context.user_data["letter_wait_name"] = False
+        context.user_data["letter_name"] = name
+        
+        # Generate and send the letter
+        letter_text = build_letter(ai_name=name, vibe="assured_echo")
+        await update.message.reply_text(letter_text)
+        return
+    
+    # Normal message handling
     script, metrics_text = _model.generate_response(text)
     
     rendered_script = _render_script(script)
@@ -286,6 +317,7 @@ def main() -> None:
     application.add_handler(
         CallbackQueryHandler(_send_policy, pattern="^policy:")
     )
+    application.add_handler(CallbackQueryHandler(_letter_start, pattern="^letter:start$"))
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_message)
     )

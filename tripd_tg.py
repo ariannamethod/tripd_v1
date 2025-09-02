@@ -43,6 +43,7 @@ def _render_script(script: str) -> Tuple[str, Optional[str]]:
         escaped_script = html.escape(script)
         return f"<pre><code>{escaped_script}</code></pre>", "HTML"
     else:
+        # Markdown: use code fence, escape backticks to avoid fence breakage
         safe_script = script.replace("```", "'''").replace("`", "'")
         return f"```TRIPD\n{safe_script}\n```", "Markdown"
 
@@ -97,19 +98,12 @@ while len(_readme_parts) < 3:
             _text[2 * len(_text) // 3 :],
         ]
 
-# Load policy files
+# Load policy files if present
 _ACCEPTABLE_USE = Path(__file__).resolve().parent / "ACCEPTABLE_USE.md"
 _TRADEMARK_POLICY = Path(__file__).resolve().parent / "TRADEMARK_POLICY.md"
-_policy_parts = []
-if _ACCEPTABLE_USE.exists():
-    _policy_parts.append(_ACCEPTABLE_USE.read_text(encoding="utf-8"))
-else:
-    _policy_parts.append("")
-
-if _TRADEMARK_POLICY.exists():
-    _policy_parts.append(_TRADEMARK_POLICY.read_text(encoding="utf-8"))
-else:
-    _policy_parts.append("")
+_policy_parts: List[str] = []
+_policy_parts.append(_ACCEPTABLE_USE.read_text(encoding="utf-8") if _ACCEPTABLE_USE.exists() else "")
+_policy_parts.append(_TRADEMARK_POLICY.read_text(encoding="utf-8") if _TRADEMARK_POLICY.exists() else "")
 
 # ---------------------------------------------------------------------------
 # Menu helpers

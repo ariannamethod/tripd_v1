@@ -25,11 +25,9 @@ from telegram.ext import (
 )
 
 try:  # pragma: no cover - support package and script execution
-    from .tripd import TripDModel, start_verb_stream
-    from .tripd_letters import build_letter
+    from .tripd import TripDModel, start_verb_stream, build_letter
 except ImportError:  # pragma: no cover - fallback for running as scripts
-    from tripd import TripDModel, start_verb_stream
-    from tripd_letters import build_letter
+    from tripd import TripDModel, start_verb_stream, build_letter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -250,7 +248,7 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         context.user_data["letter_name"] = name
         
         # Generate and send the letter
-        letter_text = build_letter(ai_name=name, vibe="assured_echo")
+        letter_text = build_letter(ai_name=name)
         await update.message.reply_text(letter_text)
         return
     

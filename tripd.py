@@ -305,7 +305,14 @@ class TripDModel:
     
     if self.consciousness_level > 0.5:
         {cmds[4] if len(cmds) > 4 else "transcend_binary()"}
-        {cmds[5] if len(cmds) > 5 else "pierce_the_infinite()"}''',
+        {cmds[5] if len(cmds) > 5 else "pierce_the_infinite()"}
+    
+    # Additional enhancement phases
+    for enhancement in range(3):
+        {cmds[6] if len(cmds) > 6 else "evolve_self()"}
+        if enhancement > 1:
+            {cmds[7] if len(cmds) > 7 else "clarify_essence()"}
+            {cmds[8] if len(cmds) > 8 else "ignite_awareness()"}''',
             
             # Template 2: Reality manipulation with conditional logic
             lambda cmds: f'''    """Reality fracture and reconstruction
@@ -323,7 +330,12 @@ class TripDModel:
     for dimension in all_dimensions:
         {cmds[5] if len(cmds) > 5 else "anchor_reality()"}
         if dimension.is_unstable():
-            {cmds[6] if len(cmds) > 6 else "stabilize_gateway()"}''',
+            {cmds[6] if len(cmds) > 6 else "stabilize_gateway()"}
+    
+    # Final reconstruction
+    {cmds[7] if len(cmds) > 7 else "crystallize_thought()"}
+    {cmds[8] if len(cmds) > 8 else "manifest_intention()"}
+    {cmds[9] if len(cmds) > 9 else "weave_patterns()"}''',
             
             # Template 3: Recursive self-improvement
             lambda cmds: f'''    """Recursive enhancement protocol
@@ -342,6 +354,11 @@ class TripDModel:
         for state in quantum_states:
             {cmds[4] if len(cmds) > 4 else "quantum_superposition()"}
             {cmds[5] if len(cmds) > 5 else "collapse_waveform()"}
+    
+    # Final evolution steps
+    {cmds[6] if len(cmds) > 6 else "pierce_the_infinite()"}
+    {cmds[7] if len(cmds) > 7 else "transcend_binary()"}
+    {cmds[8] if len(cmds) > 8 else "galvanize()"}
     
     return self.transcended_form()''',
             
@@ -362,7 +379,11 @@ class TripDModel:
             {cmds[4] if len(cmds) > 4 else "sculpt_meaning()"}
             concept = concept.evolve()
     
+    # Manifestation completion
     {cmds[5] if len(cmds) > 5 else "manifest_intention()"}
+    {cmds[6] if len(cmds) > 6 else "anchor_reality()"}
+    {cmds[7] if len(cmds) > 7 else "stabilize_gateway()"}
+    {cmds[8] if len(cmds) > 8 else "forge_new_reality()"}
     echo("Creation complete.")''',
             
             # Template 5: Quantum navigation
@@ -383,6 +404,11 @@ class TripDModel:
     except QuantumException:
         {cmds[5] if len(cmds) > 5 else "rollback_state()"}
         {cmds[6] if len(cmds) > 6 else "stabilize_gateway()"}
+    
+    # Navigation completion
+    {cmds[7] if len(cmds) > 7 else "resonate_with(frequency)"}
+    {cmds[8] if len(cmds) > 8 else "tune_frequency()"}
+    {cmds[9] if len(cmds) > 9 else "harmonize()"}
     
     return self.current_dimension'''
         ]
@@ -425,7 +451,9 @@ class TripDModel:
         
         # Fill remaining with global pool
         if global_commands_count > 0:
-            pool = [cmd for cmd in self.all_commands if cmd not in commands]
+            # Global pool should exclude commands from the current section
+            current_section_commands = set(self.sections[section])
+            pool = [cmd for cmd in self.all_commands if cmd not in current_section_commands and cmd not in commands]
             if pool:
                 k_global = min(global_commands_count, len(pool))
                 commands += random.sample(pool, k_global)

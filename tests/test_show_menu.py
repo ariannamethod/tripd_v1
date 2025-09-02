@@ -19,7 +19,6 @@ def _load(name: str, file: str):
 _load("tripd_pkg.tripd_memory", "tripd_memory.py")
 _load("tripd_pkg.tripd_expansion", "tripd_expansion.py")
 _load("tripd_pkg.tripd", "tripd.py")
-_load("tripd_pkg.verb_stream", "verb_stream.py")
 tg = _load("tripd_pkg.tripd_tg", "tripd_tg.py")
 _show_menu = tg._show_menu
 
@@ -65,7 +64,7 @@ def test_show_menu_command():
     asyncio.run(_show_menu(update, DummyContext()))
     assert update.message.replies
     text, kwargs = update.message.replies[0]
-    assert text == "Choose a TRIPD section:"
+    assert text == "True Recursive Intelligent Python Dialect"
     markup = kwargs.get("reply_markup")
     assert isinstance(markup, InlineKeyboardMarkup)
     assert markup.inline_keyboard
@@ -77,7 +76,7 @@ def test_show_menu_callback():
     assert update.callback_query.answered
     assert update.callback_query.edits
     text, kwargs = update.callback_query.edits[0]
-    assert text == "Choose a TRIPD section:"
+    assert text == "True Recursive Intelligent Python Dialect"
     markup = kwargs.get("reply_markup")
     assert isinstance(markup, InlineKeyboardMarkup)
     assert markup.inline_keyboard

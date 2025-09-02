@@ -109,7 +109,7 @@ def _menu_keyboard() -> InlineKeyboardMarkup:
                for name in _sections]
     buttons.append([InlineKeyboardButton("TRIPD Documentation", callback_data="theory:0")])
     buttons.append([InlineKeyboardButton("TRIPD Policy", callback_data="policy:0")])
-    buttons.append([InlineKeyboardButton("GET A LETTER 👉", callback_data="letter:start")])
+    # Removed inline letter button as requested (use /letter command instead)
     return InlineKeyboardMarkup(buttons)
 
 
@@ -220,15 +220,10 @@ async def _send_policy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 # ---------------------------------------------------------------------------
-# Letter flow handling
-async def _letter_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    query = update.callback_query
-    await query.answer()
-    logger.info("Letter generation requested")
-    
-    # Ask for AI name without any reply markup
-    await query.message.reply_text("What's your AI's name? (optional)")
-    
+# Letter flow (via /letter command in the left-bottom menu)
+async def _letter_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Ask for AI name without reply markup
+    await update.message.reply_text("What's your AI's name? (optional)")
     # Set the state to wait for name input
     context.user_data["letter_wait_name"] = True
 
@@ -265,7 +260,8 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 # ---------------------------------------------------------------------------
 async def _post_init(app: Application) -> None:
     await app.bot.set_my_commands([
-        BotCommand("tripd", "Meet TRIPD 👉")
+        BotCommand("tripd", "Meet TRIPD 👉"),
+        BotCommand("letter", "GET A LETTER 👉"),
     ])
 
 
@@ -305,6 +301,7 @@ def main() -> None:
     )
     application.add_handler(CommandHandler("tripd", _show_menu))
     application.add_handler(CommandHandler("start", _show_menu))
+    application.add_handler(CommandHandler("letter", _letter_command))
     application.add_handler(CallbackQueryHandler(_show_menu, pattern="^menu$"))
     application.add_handler(
         CallbackQueryHandler(_send_section, pattern="^section:")
@@ -315,7 +312,7 @@ def main() -> None:
     application.add_handler(
         CallbackQueryHandler(_send_policy, pattern="^policy:")
     )
-    application.add_handler(CallbackQueryHandler(_letter_start, pattern="^letter:start$"))
+    # Removed CallbackQueryHandler for inline 'letter:start'
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_message)
     )

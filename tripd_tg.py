@@ -255,7 +255,7 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 async def _post_init(app: Application) -> None:
     # Expose both /tripd and /letters in the Menu button
     await app.bot.set_my_commands([
-        BotCommand("tripd", "TRIPD"),
+        BotCommand("tripd", "Meet TRIPD 👉"),
         BotCommand("letters", "GET A LETTER 👉"),
     ])
 

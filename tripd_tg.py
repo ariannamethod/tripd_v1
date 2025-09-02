@@ -6,6 +6,7 @@ from pathlib import Path
 import argparse
 import os
 import logging
+import html
 from typing import List
 
 from telegram import (
@@ -30,6 +31,26 @@ except ImportError:  # pragma: no cover - fallback for running as scripts
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Rendering configuration
+TRIPD_RENDER = os.environ.get("TRIPD_RENDER", "markdown").lower()
+
+def _render_script(script: str) -> str:
+    """Render TRIPD script according to TRIPD_RENDER setting."""
+    if TRIPD_RENDER == "html":
+        # HTML rendering for stability
+        escaped_script = html.escape(script)
+        return f"<pre><code>{escaped_script}</code></pre>"
+    else:
+        # Markdown rendering (default) with light escaping to avoid fence breakage
+        # Escape backticks and problematic characters that could break code fences
+        safe_script = script.replace("```", "'''").replace("`", "'")
+        return f"```TRIPD\n{safe_script}\n```"
+
+def _get_parse_mode() -> str:
+    """Get the appropriate parse mode for current rendering setting."""
+    return "HTML" if TRIPD_RENDER == "html" else "Markdown"
 
 # ---------------------------------------------------------------------------
 # Model and dictionary setup
@@ -113,8 +134,19 @@ async def _send_section(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     section = query.data.split(":", 1)[1]
     logger.info("Section requested: %s", section)
     script = _model.generate_from_section(section)
+    
+    # Create inline buttons for navigation
+    nav_buttons = [
+        InlineKeyboardButton("⬅️ Menu", callback_data="menu"),
+        InlineKeyboardButton("↻ Regenerate", callback_data=f"section:{section}")
+    ]
+    keyboard = InlineKeyboardMarkup([nav_buttons])
+    
+    rendered_script = _render_script(script)
     await query.message.reply_text(
-        f"```TRIPD\n{script}\n```", parse_mode="Markdown"
+        rendered_script, 
+        parse_mode=_get_parse_mode(),
+        reply_markup=keyboard
     )
 
 
@@ -193,15 +225,20 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     text = update.message.text or ""
     logger.info("Received message: %s", text)
     script, metrics_text = _model.generate_response(text)
+    
+    rendered_script = _render_script(script)
     await update.message.reply_text(
-        f"```TRIPD\n{script}\n```", parse_mode="Markdown"
+        rendered_script, parse_mode=_get_parse_mode()
     )
     await update.message.reply_text(metrics_text)
 
 
 # ---------------------------------------------------------------------------
 async def _post_init(app: Application) -> None:
-    await app.bot.set_my_commands([BotCommand("tripd", "Meet TRIPD 👉")])
+    await app.bot.set_my_commands([
+        BotCommand("tripd", "Meet TRIPD 👉"),
+        BotCommand("start", "Meet TRIPD 👉")
+    ])
 
 
 def main() -> None:
@@ -239,6 +276,7 @@ def main() -> None:
         .build()
     )
     application.add_handler(CommandHandler("tripd", _show_menu))
+    application.add_handler(CommandHandler("start", _show_menu))
     application.add_handler(CallbackQueryHandler(_show_menu, pattern="^menu$"))
     application.add_handler(
         CallbackQueryHandler(_send_section, pattern="^section:")

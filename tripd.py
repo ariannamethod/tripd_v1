@@ -1,3 +1,4 @@
+
 """Core TRIPD model built on a lightweight transformer.
 
 The model loads the TRIPD dictionary and compose scripts in the

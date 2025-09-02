@@ -109,7 +109,7 @@ def _menu_keyboard() -> InlineKeyboardMarkup:
                for name in _sections]
     buttons.append([InlineKeyboardButton("TRIPD Documentation", callback_data="theory:0")])
     buttons.append([InlineKeyboardButton("TRIPD Policy", callback_data="policy:0")])
-    # Removed inline letter button as requested (use /letter command instead)
+    # No inline letter button; use /letters instead
     return InlineKeyboardMarkup(buttons)
 
 
@@ -220,11 +220,9 @@ async def _send_policy(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 # ---------------------------------------------------------------------------
-# Letter flow (via /letter command in the left-bottom menu)
+# Letter flow (via /letters command in the bottom-left Menu button)
 async def _letter_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # Ask for AI name without reply markup
     await update.message.reply_text("What's your AI's name? (optional)")
-    # Set the state to wait for name input
     context.user_data["letter_wait_name"] = True
 
 
@@ -237,19 +235,15 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     
     # Check if we're waiting for a letter name
     if context.user_data.get("letter_wait_name"):
-        # Capture the name and clear the state
         name = text.strip() if text.strip() else None
         context.user_data["letter_wait_name"] = False
         context.user_data["letter_name"] = name
-        
-        # Generate and send the letter
         letter_text = build_letter(ai_name=name)
         await update.message.reply_text(letter_text)
         return
     
     # Normal message handling
     script, metrics_text = _model.generate_response(text)
-    
     rendered_script = _render_script(script)
     await update.message.reply_text(
         rendered_script, parse_mode=_get_parse_mode()
@@ -259,11 +253,10 @@ async def _handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 # ---------------------------------------------------------------------------
 async def _post_init(app: Application) -> None:
+    # Replace /tripd with /letters in the Menu button
     await app.bot.set_my_commands([
-        BotCommand("tripd", "Meet TRIPD 👉"),
-        BotCommand("letter", "GET A LETTER 👉"),
+        BotCommand("letters", "GET A LETTER 👉"),
     ])
-
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run TRIPD Telegram bot")
@@ -299,8 +292,11 @@ def main() -> None:
         .post_init(_post_init)
         .build()
     )
+    # Keep /tripd handler for backward compat, but it won't appear in Menu BUTTON
     application.add_handler(CommandHandler("tripd", _show_menu))
     application.add_handler(CommandHandler("start", _show_menu))
+    # Add /letters to the Menu BUTTON; keep /letter for manual typing
+    application.add_handler(CommandHandler("letters", _letter_command))
     application.add_handler(CommandHandler("letter", _letter_command))
     application.add_handler(CallbackQueryHandler(_show_menu, pattern="^menu$"))
     application.add_handler(
@@ -312,7 +308,7 @@ def main() -> None:
     application.add_handler(
         CallbackQueryHandler(_send_policy, pattern="^policy:")
     )
-    # Removed CallbackQueryHandler for inline 'letter:start'
+    # No inline letter button
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_message)
     )

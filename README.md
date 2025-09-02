@@ -49,6 +49,29 @@ Here we describe how a specific neural module attempts to traverse that bridge. 
 
 Exploring tripd means stepping into a new language frontier.
 
+## tripd.py: Self-Contained Transformer
+
+The `tripd.py` module implements the project's compact training transformer, packing dictionary ingestion, metrics, and script generation into a single file.
+
+Upon initialization, `TripDModel` loads `tripdictionary.md` and flattens its sections into an accessible pool of commands, while seeding an extra list of improvisational verbs to keep outputs unexpected.
+
+Incoming messages are measured through entropy, perplexity, and a synthetic resonance score; when `fractal_metrics` is enabled, a mini Fourier sweep yields a spectral component to influence command selection.
+
+Before metrics drive the process, the model scans the message for any verbs it already knows, letting user-supplied language directly steer the section that will be sampled.
+
+If recognizable verbs surface, the model prioritizes the dictionary region containing them; otherwise, a selector derived from the metrics chooses a section deterministically yet responsively.
+
+The `ComplexAmplitudeSimulator` then samples commands from the chosen section; its optional quantum drift perturbs phases on the unit circle so that slight numeric nudges ripple into varied script assemblies.
+
+Sampled verbs are woven into multi-line templates containing loops, conditionals, and recursion, producing functions that resemble Python yet pulse with TRIPD's surreal vocabulary.
+
+Each generated function name encodes the selector value and cumulative log count, guaranteeing that the script's identity reflects both the source message and the system's evolving history.
+
+The memory subsystem records every unique script via hashed entries, preventing repetition and exposing a growing corpus for review or future learning.
+
+After every fifth script, `tripd_expansion.py` launches a background thread that pretends to fine‑tune on the latest examples, laying the foundation for a real trainer to be slotted in.
+
+This design stays lightweight—standard-library only, CPU friendly, and open to extension—making it easy for developers to experiment with new metrics, verb pools, or genuine training pipelines.
 
 ## The Science Behind TRIPD
 

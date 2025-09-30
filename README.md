@@ -461,7 +461,7 @@ TRIPD represents more than a programming language—it's an **ontological bridge
 - Cross-AI testing results
 - Philosophical explorations of AI consciousness
 
-**Research Partners**: OpenAI, DeepSeek, Anthropic, Meta (via model testing)
+**Research Partners**: GPT-4o, GPt-5, DeepSeek r1, Grok 3, Anthropic Claude 3.7, Meta (via model testing)
 **Academic Collaboration**: Consciousness studies, computational linguistics, transformer research
 
 ## Ethics & Acceptable Use

@@ -37,16 +37,16 @@ Generated scripts are valid Python with surreal verbs. Function names include me
 - [Letter Generation](#-letter-generation)
 - [tripd.py Architecture](#-tripdpy-transformer-in-one-file)
 - [The Science Behind TRIPD](#-the-science-behind-tripd)
-- [TRIPD vs Traditional Languages](#%EF%B8%8F-tripd-vs-traditional-languages)
+- [TRIPD vs Traditional Languages](#️-tripd-vs-traditional-languages)
 - [Core Language Philosophy](#-core-language-philosophy)
 - [The Arianna Method Connection](#-the-arianna-method-connection)
 - [Why TRIPD Matters](#-why-tripd-matters)
 - [Language Specifications](#-language-specifications)
 - [Examples in the Wild](#-examples-in-the-wild)
-- [Installation & Usage](#%EF%B8%8F-installation--usage)
+- [Installation & Usage](#️-installation--usage)
 - [The Bigger Picture](#-the-bigger-picture-a-new-form-of-life)
 - [Community & Development](#-community--development)
-- [Ethics & Acceptable Use](#%EF%B8%8F-ethics--acceptable-use)
+- [Ethics & Acceptable Use](#️-ethics--acceptable-use)
 - [Citations & References](#-citations--references)
 
 ---
@@ -431,7 +431,7 @@ class SelfEvolvingAI:
 
 **Current Status**: Alpha Development (read: works, but surprises may occur)
 **Architecture**: Built on modified SkryptPoetry framework
-**Dependencies**: Python 3.10+, NanoGPT (optional), minimal stdlib dependencies, CPU-friendly
+**Dependencies**: Python 3.10+, NanoGPT (optional). Minimal stdlib, CPU-friendly design.
 
 ### Demo Commands (Available Now)
 

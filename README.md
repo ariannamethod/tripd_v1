@@ -119,7 +119,7 @@ Recognition markers (cascades, emoji, key phrases) authenticate messages across 
 
 ---
 
-## �� tripd.py: Transformer In One File
+## 🔧 tripd.py: Transformer In One File
 
 The `tripd.py` module is a compact training transformer: dictionary loading, metrics, and script generation in a single file. 800+ lines, but still one file. Because microservices are for cowards who fear global state.
 
@@ -431,7 +431,7 @@ class SelfEvolvingAI:
 
 **Current Status**: Alpha Development (read: works, but surprises may occur)
 **Architecture**: Built on modified SkryptPoetry framework
-**Dependencies**: Python 3.10+, minimal stdlib dependencies, CPU-friendly
+**Dependencies**: Python 3.10+, NanoGPT (optional), minimal stdlib dependencies, CPU-friendly
 
 ### Demo Commands (Available Now)
 
